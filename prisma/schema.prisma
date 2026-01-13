@@ -22,3 +22,10 @@ model Movie {
   review    String?
   isOnWatchlist Boolean?
 }
+
+model User {
+  id       Int      @id @default(autoincrement())
+  email    String   @unique
+  name     String
+  password String
+}

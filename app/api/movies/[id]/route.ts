@@ -23,19 +23,32 @@ export async function PUT(request: Request, { params }: { params: { id: string |
   }
 
   const body = await request.json();
-  const { name, year, genre, isOnWatchlist } = body;
+  const dataToUpdate: { [key: string]: any } = {};
 
+  // TODO: fix, this can be less ugly
+  if ('name' in body) {
+    dataToUpdate.name = body.name;
+  }
+  if ('year' in body) {
+    dataToUpdate.year = body.year;
+  }
+  if ('genre' in body) {
+    dataToUpdate.genre = body.genre;
+  }
+  if ('isOnWatchlist' in body) {
+    dataToUpdate.isOnWatchlist = body.isOnWatchlist;
+  }
+  if ('myRating' in body) {
+    dataToUpdate.myRating = body.myRating;
+  }
+  if ('review' in body) {
+    dataToUpdate.review = body.review;
+  }
+  
   try {
     const updatedMovie = await prisma.movie.update({
       where: { id: movieId },
-      data: {
-        name,
-        year,
-        genre,
-        isOnWatchlist,
-        myRating: 'myRating' in body ? body.myRating : null,
-        review: 'review' in body ? body.review : null,
-      },
+      data: dataToUpdate,
     });
 
     return NextResponse.json(updatedMovie);
