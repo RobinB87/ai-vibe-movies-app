@@ -22,11 +22,20 @@ export async function PUT(request: Request, { params }: { params: { id: string |
     return NextResponse.json({ error: 'Invalid movie ID' }, { status: 400 });
   }
 
-  const { name, year, genre, myRating, review, isOnWatchlist } = await request.json();
+  const body = await request.json();
+  const { name, year, genre, isOnWatchlist } = body;
+
   try {
     const updatedMovie = await prisma.movie.update({
       where: { id: movieId },
-      data: { name, year, genre, myRating, review, isOnWatchlist },
+      data: {
+        name,
+        year,
+        genre,
+        isOnWatchlist,
+        myRating: 'myRating' in body ? body.myRating : null,
+        review: 'review' in body ? body.review : null,
+      },
     });
 
     return NextResponse.json(updatedMovie);

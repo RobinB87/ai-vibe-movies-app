@@ -17,8 +17,8 @@ const MovieCard: React.FC<MovieCardProps> = ({ movie }) => {
         )}
       </h2>
       <p><strong>Genre:</strong> {movie.genre}</p>
-      <p><strong>My Rating:</strong> {movie.myRating}/10</p>
-      <p><strong>Review:</strong> {movie.review}</p>
+      {movie.myRating && <p><strong>My Rating:</strong> {movie.myRating}/10</p>}
+      {movie.review && <p><strong>Review:</strong> {movie.review}</p>}
       <div className="mt-4">
         <Link href={`/movies/${movie.id}/edit`} className="text-blue-500 hover:underline mr-4">
           Edit
