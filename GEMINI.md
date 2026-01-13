@@ -12,6 +12,7 @@ For ORM use Prisma
 Get all movies
 Post a movie
 Put or patch a movie
+Add a search movies API endpoint
 
 # Methodology
 Use TDD to create the app.

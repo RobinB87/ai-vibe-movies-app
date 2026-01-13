@@ -26,23 +26,121 @@ describe('Movies API', () => {
       ];
       (prisma.movie.findMany as jest.Mock).mockResolvedValue(mockMovies);
 
-      const response = await GET();
+      // Pass a mock Request object
+      const request = new Request('http://localhost:3000/api/movies');
+      const response = await GET(request);
       const data = await response.json();
 
       expect(response.status).toBe(200);
       expect(data).toEqual(mockMovies);
       expect(prisma.movie.findMany).toHaveBeenCalledTimes(1);
+      expect(prisma.movie.findMany).toHaveBeenCalledWith();
     });
 
-    it('should return an empty array if no movies exist', async () => {
+    it('should return movies matching the search term in name', async () => {
+      const mockMovies = [
+        { id: 1, name: 'Movie A', year: 2020, genre: 'Action', myRating: 5, review: 'Great' },
+      ];
+      (prisma.movie.findMany as jest.Mock).mockResolvedValue(mockMovies);
+
+      const request = new Request('http://localhost:3000/api/movies?search=Movie A');
+      const response = await GET(request);
+      const data = await response.json();
+
+      expect(response.status).toBe(200);
+      expect(data).toEqual(mockMovies);
+      expect(prisma.movie.findMany).toHaveBeenCalledWith({
+        where: {
+          OR: [
+            { name: { contains: 'Movie A', mode: 'insensitive' } },
+            { genre: { contains: 'Movie A', mode: 'insensitive' } },
+            { review: { contains: 'Movie A', mode: 'insensitive' } },
+          ],
+        },
+      });
+    });
+
+    it('should return movies matching the search term in genre', async () => {
+      const mockMovies = [
+        { id: 2, name: 'Film B', year: 2021, genre: 'Comedy', myRating: 4, review: 'Funny' },
+      ];
+      (prisma.movie.findMany as jest.Mock).mockResolvedValue(mockMovies);
+
+      const request = new Request('http://localhost:3000/api/movies?search=Comedy');
+      const response = await GET(request);
+      const data = await response.json();
+
+      expect(response.status).toBe(200);
+      expect(data).toEqual(mockMovies);
+      expect(prisma.movie.findMany).toHaveBeenCalledWith({
+        where: {
+          OR: [
+            { name: { contains: 'Comedy', mode: 'insensitive' } },
+            { genre: { contains: 'Comedy', mode: 'insensitive' } },
+            { review: { contains: 'Comedy', mode: 'insensitive' } },
+          ],
+        },
+      });
+    });
+
+    it('should return movies matching the search term in review', async () => {
+      const mockMovies = [
+        { id: 3, name: 'Movie C', year: 2022, genre: 'Thriller', myRating: 3, review: 'Intense plot' },
+      ];
+      (prisma.movie.findMany as jest.Mock).mockResolvedValue(mockMovies);
+
+      const request = new Request('http://localhost:3000/api/movies?search=Intense');
+      const response = await GET(request);
+      const data = await response.json();
+
+      expect(response.status).toBe(200);
+      expect(data).toEqual(mockMovies);
+      expect(prisma.movie.findMany).toHaveBeenCalledWith({
+        where: {
+          OR: [
+            { name: { contains: 'Intense', mode: 'insensitive' } },
+            { genre: { contains: 'Intense', mode: 'insensitive' } },
+            { review: { contains: 'Intense', mode: 'insensitive' } },
+          ],
+        },
+      });
+    });
+
+    it('should return an empty array if no movies match the search term', async () => {
       (prisma.movie.findMany as jest.Mock).mockResolvedValue([]);
 
-      const response = await GET();
+      const request = new Request('http://localhost:3000/api/movies?search=NonExistent');
+      const response = await GET(request);
       const data = await response.json();
 
       expect(response.status).toBe(200);
       expect(data).toEqual([]);
+      expect(prisma.movie.findMany).toHaveBeenCalledWith({
+        where: {
+          OR: [
+            { name: { contains: 'NonExistent', mode: 'insensitive' } },
+            { genre: { contains: 'NonExistent', mode: 'insensitive' } },
+            { review: { contains: 'NonExistent', mode: 'insensitive' } },
+          ],
+        },
+      });
+    });
+
+    it('should return all movies if search term is empty', async () => {
+      const mockMovies = [
+        { id: 1, name: 'Movie 1', year: 2020, genre: 'Action', myRating: 5, review: 'Great' },
+        { id: 2, name: 'Movie 2', year: 2021, genre: 'Comedy', myRating: 4, review: 'Funny' },
+      ];
+      (prisma.movie.findMany as jest.Mock).mockResolvedValue(mockMovies);
+
+      const request = new Request('http://localhost:3000/api/movies?search='); // Empty search term
+      const response = await GET(request);
+      const data = await response.json();
+
+      expect(response.status).toBe(200);
+      expect(data).toEqual(mockMovies);
       expect(prisma.movie.findMany).toHaveBeenCalledTimes(1);
+      expect(prisma.movie.findMany).toHaveBeenCalledWith(); // Should call without a where clause
     });
   });
 

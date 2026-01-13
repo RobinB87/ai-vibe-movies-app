@@ -1,8 +1,24 @@
 import prisma from '@/lib/prisma';
 import { NextResponse } from 'next/server';
 
-export async function GET() {
-  const movies = await prisma.movie.findMany();
+export async function GET(request: Request) {
+  const { searchParams } = new URL(request.url);
+  const searchTerm = searchParams.get('search');
+
+  let movies;
+  if (searchTerm) {
+    movies = await prisma.movie.findMany({
+      where: {
+        OR: [
+          { name: { contains: searchTerm, mode: 'insensitive' } },
+          { genre: { contains: searchTerm, mode: 'insensitive' } },
+          { review: { contains: searchTerm, mode: 'insensitive' } },
+        ],
+      },
+    });
+  } else {
+    movies = await prisma.movie.findMany();
+  }
   return NextResponse.json(movies);
 }
 
