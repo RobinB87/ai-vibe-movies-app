@@ -4,15 +4,7 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import MovieCard from '../../components/MovieCard';
-
-interface Movie {
-  id: number;
-  name: string;
-  year: number;
-  genre: string;
-  myRating: number;
-  review: string;
-}
+import { Movie } from '@/types/movie';
 
 const MoviesPage = () => {
   const [movies, setMovies] = useState<Movie[]>([]);
