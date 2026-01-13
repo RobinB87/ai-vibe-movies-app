@@ -18,6 +18,6 @@ model Movie {
   name      String  @unique
   year      Int
   genre     String
-  myRating  Int
+  myRating  Float
   review    String  
 }
