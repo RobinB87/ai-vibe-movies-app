@@ -19,5 +19,6 @@ model Movie {
   year      Int
   genre     String
   myRating  Float
-  review    String  
+  review    String
+  isOnWatchlist Boolean?
 }
