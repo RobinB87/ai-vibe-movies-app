@@ -145,9 +145,27 @@ describe('Movies API', () => {
   });
 
   describe('POST /api/movies', () => {
-    it('should create a new movie', async () => {
+    it('should create a new movie with isOnWatchlist property', async () => {
+      const newMovieData = { name: 'Watchlist Movie', year: 2024, genre: 'Sci-Fi', myRating: 4.5, review: 'Intriguing', isOnWatchlist: true };
+      const createdMovie = { id: 4, ...newMovieData };
+      (prisma.movie.create as jest.Mock).mockResolvedValue(createdMovie);
+
+      const mockRequest = {
+        json: async () => newMovieData,
+      } as Request;
+
+      const response = await POST(mockRequest);
+      const data = await response.json();
+
+      expect(response.status).toBe(201);
+      expect(data).toEqual(createdMovie);
+      expect(prisma.movie.create).toHaveBeenCalledWith({ data: newMovieData });
+      expect(prisma.movie.create).toHaveBeenCalledTimes(1);
+    });
+
+    it('should create a new movie without isOnWatchlist property', async () => {
       const newMovieData = { name: 'New Movie', year: 2023, genre: 'Drama', myRating: 3, review: 'Good' };
-      const createdMovie = { id: 3, ...newMovieData };
+      const createdMovie = { id: 3, ...newMovieData, isOnWatchlist: null }; // Prisma returns null for undefined optional fields
       (prisma.movie.create as jest.Mock).mockResolvedValue(createdMovie);
 
       const mockRequest = {

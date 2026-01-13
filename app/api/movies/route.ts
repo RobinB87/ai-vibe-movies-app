@@ -23,7 +23,7 @@ export async function GET(request: Request) {
 }
 
 export async function POST(request: Request) {
-  const { name, year, genre, myRating, review } = await request.json();
+  const { name, year, genre, myRating, review, isOnWatchlist } = await request.json();
   const newMovie = await prisma.movie.create({
     data: {
       name,
@@ -31,6 +31,7 @@ export async function POST(request: Request) {
       genre,
       myRating,
       review,
+      isOnWatchlist,
     },
   });
   return NextResponse.json(newMovie, { status: 201 });

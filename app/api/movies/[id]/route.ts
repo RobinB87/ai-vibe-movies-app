@@ -1,7 +1,7 @@
 import prisma from '@/lib/prisma';
 import { NextResponse } from 'next/server';
 
-export async function GET(request: Request, { params }: { params: { id: string | Promise<string> } }) {
+export async function GET(_: Request, { params }: { params: { id: string | Promise<string> } }) {
   const resolvedParams = typeof params === 'string' ? { id: params } : await Promise.resolve(params);
   const { id } = resolvedParams;
 
@@ -22,11 +22,11 @@ export async function PUT(request: Request, { params }: { params: { id: string |
     return NextResponse.json({ error: 'Invalid movie ID' }, { status: 400 });
   }
 
-  const { name, year, genre, myRating, review } = await request.json();
+  const { name, year, genre, myRating, review, isOnWatchlist } = await request.json();
   try {
     const updatedMovie = await prisma.movie.update({
       where: { id: movieId },
-      data: { name, year, genre, myRating, review },
+      data: { name, year, genre, myRating, review, isOnWatchlist },
     });
 
     return NextResponse.json(updatedMovie);
@@ -35,7 +35,7 @@ export async function PUT(request: Request, { params }: { params: { id: string |
   }
 }
 
-export async function DELETE(request: Request, { params }: { params: { id: string | Promise<string> } }) {
+export async function DELETE(_: Request, { params }: { params: { id: string | Promise<string> } }) {
   const resolvedParams = typeof params === 'string' ? { id: params } : await Promise.resolve(params);
   const { id } = resolvedParams;
   const movieId = parseInt(String(id), 10);

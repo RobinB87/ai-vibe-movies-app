@@ -44,8 +44,8 @@ describe('Movie by ID API', () => {
 
   describe('PUT /api/movies/[id]', () => {
     it('should update an existing movie', async () => {
-      const updatedMovieData = { name: 'Updated Movie', year: 2022, genre: 'Sci-Fi', myRating: 4, review: 'Good' };
-      const existingMovie = { id: 1, name: 'Movie 1', year: 2020, genre: 'Action', myRating: 5, review: 'Great' };
+      const updatedMovieData = { name: 'Updated Movie', year: 2022, genre: 'Sci-Fi', myRating: 4, review: 'Good', isOnWatchlist: true };
+      const existingMovie = { id: 1, name: 'Movie 1', year: 2020, genre: 'Action', myRating: 5, review: 'Great', isOnWatchlist: undefined };
       const updatedMovie = { id: 1, ...updatedMovieData };
       
       // Mock findUnique to simulate movie existing for the update operation
@@ -63,6 +63,29 @@ describe('Movie by ID API', () => {
       expect(data).toEqual(updatedMovie);
       expect(prisma.movie.update).toHaveBeenCalledWith({
         where: { id: 1 },
+        data: updatedMovieData,
+      });
+    });
+
+    it('should update an existing movie without changing isOnWatchlist if not provided', async () => {
+      const updatedMovieData = { name: 'Updated Movie Only Name', year: 2022, genre: 'Sci-Fi', myRating: 4, review: 'Good' };
+      const existingMovie = { id: 2, name: 'Movie 2', year: 2021, genre: 'Comedy', myRating: 3, review: 'Funny', isOnWatchlist: true };
+      const updatedMovie = { ...existingMovie, ...updatedMovieData };
+      
+      (prisma.movie.findUnique as jest.Mock).mockResolvedValue(existingMovie);
+      (prisma.movie.update as jest.Mock).mockResolvedValue(updatedMovie);
+
+      const mockRequest = {
+        json: async () => updatedMovieData,
+      } as Request;
+
+      const response = await PUT(mockRequest, { params: { id: '2' } });
+      const data = await response.json();
+
+      expect(response.status).toBe(200);
+      expect(data).toEqual(updatedMovie);
+      expect(prisma.movie.update).toHaveBeenCalledWith({
+        where: { id: 2 },
         data: updatedMovieData,
       });
     });
