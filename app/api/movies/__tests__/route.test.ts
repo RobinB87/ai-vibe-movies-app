@@ -208,18 +208,22 @@ describe('Movies API', () => {
       expect(prisma.movie.create).toHaveBeenCalledTimes(1);
     });
 
-    it('should return an error if movie creation fails', async () => {
-      const newMovieData = { name: 'New Movie', year: 2023, genre: 'Drama', myRating: 3, review: 'Good' };
-      (prisma.movie.create as jest.Mock).mockRejectedValue(new Error('Creation failed'));
+    it('should create a new movie without myRating and review properties', async () => {
+      const newMovieData = { name: 'Movie without Rating/Review', year: 2023, genre: 'Fantasy', isOnWatchlist: false };
+      const createdMovie = { id: 5, ...newMovieData, myRating: null, review: null }; // Prisma returns null for optional fields not provided
+      (prisma.movie.create as jest.Mock).mockResolvedValue(createdMovie);
 
       const mockRequest = {
         json: async () => newMovieData,
       } as Request;
 
-      // Note: The actual API route currently doesn't handle errors from prisma.movie.create
-      // It will just throw, which Jest will catch. To test a specific error response,
-      // the API route would need explicit try-catch blocks and NextResponse.json({ error: ... }, { status: ... })
-      await expect(POST(mockRequest)).rejects.toThrow('Creation failed');
+      const response = await POST(mockRequest);
+      const data = await response.json();
+
+      expect(response.status).toBe(201);
+      expect(data).toEqual(createdMovie);
+      expect(prisma.movie.create).toHaveBeenCalledWith({ data: newMovieData });
+      expect(prisma.movie.create).toHaveBeenCalledTimes(1);
     });
   });
 });

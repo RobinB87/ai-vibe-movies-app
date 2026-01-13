@@ -4,6 +4,7 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { Movie } from '@/types/movie';
+import { defaultMovie } from '@/constants/movie';
 
 interface MovieFormProps {
   initialMovie?: Movie;
@@ -12,14 +13,7 @@ interface MovieFormProps {
 const MovieForm: React.FC<MovieFormProps> = ({ initialMovie }) => {
   const router = useRouter();
   const [movie, setMovie] = useState<Movie>(
-    initialMovie || {
-      name: '',
-      year: 2023,
-      genre: '',
-      myRating: 5,
-      review: '',
-      isOnWatchlist: false, // Default to false for new movies
-    }
+    initialMovie || defaultMovie
   );
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -33,13 +27,20 @@ const MovieForm: React.FC<MovieFormProps> = ({ initialMovie }) => {
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
-    let newValue: string | number | boolean;
+    let newValue: string | number | boolean | undefined;
 
     if (e.target instanceof HTMLInputElement && e.target.type === 'checkbox') {
       newValue = e.target.checked;
-    } else if (name === 'year' || name === 'myRating') {
+    } else if (name === 'year') {
       newValue = Number(value);
-    } else {
+    } else if (name === 'myRating') {
+      // If the input is empty for an optional number field, set to undefined
+      newValue = value === '' ? undefined : Number(value);
+    } else if (name === 'review') {
+      // If the input is empty for an optional string field, set to undefined
+      newValue = value === '' ? undefined : value;
+    }
+    else {
       newValue = value;
     }
 
@@ -59,12 +60,17 @@ const MovieForm: React.FC<MovieFormProps> = ({ initialMovie }) => {
     const method = movie.id ? 'PUT' : 'POST';
 
     try {
+      // Filter out undefined values from the movie object before sending
+      const movieToSubmit = Object.fromEntries(
+        Object.entries(movie).filter(([, val]) => val !== undefined)
+      );
+
       const res = await fetch(url, {
         method,
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(movie),
+        body: JSON.stringify(movieToSubmit),
       });
 
       if (!res.ok) {
@@ -141,12 +147,11 @@ const MovieForm: React.FC<MovieFormProps> = ({ initialMovie }) => {
             type="number"
             id="myRating"
             name="myRating"
-            value={movie.myRating}
+            value={movie.myRating ?? ''} // Use ?? '' for optional number inputs to avoid controlled component warning
             onChange={handleChange}
             min="1"
             max="10"
             step="0.1"
-            required
             className="mt-1 block w-full p-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
           />
         </div>
@@ -155,10 +160,9 @@ const MovieForm: React.FC<MovieFormProps> = ({ initialMovie }) => {
           <textarea
             id="review"
             name="review"
-            value={movie.review}
+            value={movie.review ?? ''} // Use ?? '' for optional string textareas
             onChange={handleChange}
             rows={4}
-            required
             className="mt-1 block w-full p-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
           ></textarea>
         </div>
