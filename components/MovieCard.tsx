@@ -1,21 +1,21 @@
 // movies-app/components/MovieCard.tsx
 import Link from 'next/link';
 
+import { Movie } from "@/types/movie";
+
 interface MovieCardProps {
-  movie: {
-    id: number;
-    name: string;
-    year: number;
-    genre: string;
-    myRating: number;
-    review: string;
-  };
+  movie: Movie;
 }
 
 const MovieCard: React.FC<MovieCardProps> = ({ movie }) => {
   return (
     <div className="border p-4 rounded-lg shadow-md">
-      <h2 className="text-xl font-bold">{movie.name} ({movie.year})</h2>
+      <h2 className="text-xl font-bold flex items-center">
+        {movie.name} ({movie.year})
+        {movie.isOnWatchlist && (
+          <span className="ml-2 text-xs bg-blue-500 text-white px-2 py-1 rounded-full">Watchlist</span>
+        )}
+      </h2>
       <p><strong>Genre:</strong> {movie.genre}</p>
       <p><strong>My Rating:</strong> {movie.myRating}/10</p>
       <p><strong>Review:</strong> {movie.review}</p>

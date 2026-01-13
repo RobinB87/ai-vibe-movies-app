@@ -1,18 +1,9 @@
-// movies-app/app/movies/[id]/edit/page.tsx
 'use client';
 
 import { useEffect, useState } from 'react';
 import { useParams } from 'next/navigation';
 import MovieForm from '../../../../components/MovieForm';
-
-interface Movie {
-  id: number;
-  name: string;
-  year: number;
-  genre: string;
-  myRating: number;
-  review: string;
-}
+import { Movie } from '@/types/movie';
 
 const EditMoviePage = () => {
   const params = useParams();
