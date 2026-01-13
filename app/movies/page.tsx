@@ -5,12 +5,14 @@ import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import MovieCard from '../../components/MovieCard';
 import { Movie } from '@/types/movie';
+import useDebounce from '@/lib/hooks/useDebounce'; 
 
 const MoviesPage = () => {
   const [movies, setMovies] = useState<Movie[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState<string>('');
+  const debouncedSearchTerm = useDebounce(searchTerm, 500); 
   const [showWatchlistOnly, setShowWatchlistOnly] = useState<boolean>(false);
 
   useEffect(() => {
@@ -18,8 +20,8 @@ const MoviesPage = () => {
       setLoading(true);
       try {
         const url = new URL('/api/movies', window.location.origin);
-        if (searchTerm) {
-          url.searchParams.set('search', searchTerm);
+        if (debouncedSearchTerm) {
+          url.searchParams.set('search', debouncedSearchTerm);
         }
         if (showWatchlistOnly) {
           url.searchParams.set('watchlist', 'true');
@@ -38,7 +40,7 @@ const MoviesPage = () => {
       }
     };
     fetchMovies();
-  }, [searchTerm, showWatchlistOnly]);
+  }, [debouncedSearchTerm, showWatchlistOnly]);
 
   if (error) return <div className="p-8 text-red-500">Error: {error}</div>;
 
