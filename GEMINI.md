@@ -27,6 +27,7 @@ Make the review and rating property optional
 Remove edit button in the movie card. Show a light hover animation (expand the card with 0.1) and show a pointer. Clicking on the card should go to the edit page.
 Ensure API is not called constantly. First, start with adding debounce on search. 
 Second, after adding or updating a movie just update the movie list locally as well. As we are going to a different page we might need to have some statemanagement or a react context.
+Create a new git branch and then: create a new user model email, name and password. Create the typescript type in the types folder. Then create an endpoint to POST and GET one user.
 
 # Methodology
 Use TDD to create the app.
@@ -35,12 +36,21 @@ Use TDD to create the app.
 First create the API and database part so that I can test it with Postman. If I'm happy continue with the UI.
 
 # Todo list. Do not start working on this until I add it to the requirements.
-Add user model with email and name
-Move rating, review and isOnWatchlist to a new table (hence also rename myRating to just rating)
-Create a login component and add this to main page if user is not logged in. Users should be able to only see movies they added.
+Endpoints need to have authorization
+Salt and hash the password
+Use JWT tokens
+
+Move myRating, review and isOnWatchlist to a new table
+Rename myRating to just rating
+
+Create a login component. A user does not need to be logged in. If he is not, he can see some default hard coded movies. He can also update and add them to a localStorage. If he logs in it will be saved automatically to his account.
+
+If I decide later to add other users reviews / ratings these should be visible as well (anonimized)
 Show overall rating of the movie as well
 Show other users reviews, anonimized
+Add AI function in app to translate a review to your requested language
 
 Fix tests for updating a movie without rating / review.
 Fix height for movie card in the grid. Just use like 150 height and end review with ... if it does not fit. 
 Implement Playwright MCP
+Also implement the react context for the watchlist?
