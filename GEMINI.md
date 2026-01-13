@@ -13,6 +13,7 @@ Get all movies
 Post a movie
 Put or patch a movie
 Add a search movies API endpoint
+Add a search bar in the UI in the list view
 
 # Methodology
 Use TDD to create the app.

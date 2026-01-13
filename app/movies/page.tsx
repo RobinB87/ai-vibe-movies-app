@@ -18,11 +18,13 @@ const MoviesPage = () => {
   const [movies, setMovies] = useState<Movie[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
+  const [searchTerm, setSearchTerm] = useState<string>('');
 
   useEffect(() => {
     const fetchMovies = async () => {
+      setLoading(true);
       try {
-        const res = await fetch('/api/movies');
+        const res = await fetch(`/api/movies?search=${searchTerm}`);
         if (!res.ok) {
           throw new Error(`HTTP error! status: ${res.status}`);
         }
@@ -35,9 +37,8 @@ const MoviesPage = () => {
       }
     };
     fetchMovies();
-  }, []);
+  }, [searchTerm]);
 
-  if (loading) return <div className="p-8">Loading movies...</div>;
   if (error) return <div className="p-8 text-red-500">Error: {error}</div>;
 
   return (
@@ -48,11 +49,24 @@ const MoviesPage = () => {
           Add New Movie
         </Link>
       </div>
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {movies.map((movie) => (
-          <MovieCard key={movie.id} movie={movie} />
-        ))}
+      <div className="mb-6">
+        <input
+          type="text"
+          placeholder="Search for a movie..."
+          className="w-full p-2 border border-gray-300 rounded"
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+        />
       </div>
+      {loading ? (
+        <div className="p-8">Loading movies...</div>
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {movies.map((movie) => (
+            <MovieCard key={movie.id} movie={movie} />
+          ))}
+        </div>
+      )}
     </div>
   );
 };
