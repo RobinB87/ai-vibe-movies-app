@@ -9,3 +9,6 @@ As free Gemini model did not handle creation of the ORM very well, I did this my
 * https://www.prisma.io/docs/guides/nextjs
 
 Then I let it continue.
+
+# Inspect database
+npx prisma studio => http://localhost:51212/
