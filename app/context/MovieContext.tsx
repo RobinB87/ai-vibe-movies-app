@@ -2,6 +2,7 @@
 
 import React, { createContext, useState, useContext, useEffect, useCallback, ReactNode } from 'react';
 import { Movie } from '@/types/movie';
+import { User } from '@/types/user';
 import useDebounce from '@/lib/hooks/useDebounce';
 
 interface MovieContextType {
@@ -16,6 +17,8 @@ interface MovieContextType {
   updateMovie: (movie: Movie) => void;
   removeMovie: (id: number) => void;
   fetchMovies: () => Promise<void>;
+  currentUser: User | null;
+  loginUser: (email: string, password: string) => Promise<boolean>;
 }
 
 const MovieContext = createContext<MovieContextType | undefined>(undefined);
@@ -27,8 +30,15 @@ export const MovieProvider: React.FC<{ children: ReactNode }> = ({ children }) =
   const [searchTerm, setSearchTerm] = useState<string>('');
   const debouncedSearchTerm = useDebounce(searchTerm, 500);
   const [showWatchlistOnly, setShowWatchlistOnly] = useState<boolean>(false);
+  const [currentUser, setCurrentUser] = useState<User | null>(null);
 
   const fetchMovies = useCallback(async () => {
+    if (!currentUser) {
+      setMovies([]);
+      setLoading(false);
+      return;
+    }
+    
     setLoading(true);
     try {
       const url = new URL('/api/movies', window.location.origin);
@@ -50,11 +60,47 @@ export const MovieProvider: React.FC<{ children: ReactNode }> = ({ children }) =
     } finally {
       setLoading(false);
     }
-  }, [debouncedSearchTerm, showWatchlistOnly]);
+  }, [debouncedSearchTerm, showWatchlistOnly, currentUser]);
+
+  const loginUser = useCallback(async (email: string, password: string): Promise<boolean> => {
+    setError(null);
+    try {
+      const res = await fetch('/api/auth/login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email, password }),
+      });
+
+      if (!res.ok) {
+        const errorData = await res.json();
+        setError(errorData.error || 'Login failed');
+        return false;
+      }
+
+      const userData: User = await res.json();
+      setCurrentUser(userData);
+      return true;
+    } catch (e: any) {
+      setError(e.message || 'Login failed due to network error');
+      return false;
+    }
+  }, []);
 
   useEffect(() => {
     fetchMovies();
   }, [fetchMovies]);
+
+  // Temporary auto-login for development
+  useEffect(() => {
+    const autoLogin = async () => {
+      if (!currentUser) { // Only attempt to login if no user is currently logged in
+        await loginUser('test@test.com', 'Bla');
+      }
+    };
+    autoLogin();
+  }, [loginUser, currentUser]);
 
   const addMovie = (newMovie: Movie) => {
     setMovies((prevMovies) => [...prevMovies, newMovie]);
@@ -82,6 +128,8 @@ export const MovieProvider: React.FC<{ children: ReactNode }> = ({ children }) =
     updateMovie,
     removeMovie,
     fetchMovies,
+    currentUser,
+    loginUser,
   };
 
   return <MovieContext.Provider value={value}>{children}</MovieContext.Provider>;

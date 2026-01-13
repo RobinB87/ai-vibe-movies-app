@@ -1,9 +1,8 @@
-// app/movies/page.tsx
 'use client';
 
 import Link from 'next/link';
 import MovieCard from '../../components/MovieCard';
-import { useMovies } from '@/app/context/MovieContext'; // Import the useMovies hook
+import { useMovies } from '@/app/context/MovieContext';
 
 const MoviesPage = () => {
   const {

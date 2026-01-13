@@ -10,5 +10,9 @@ As free Gemini model did not handle creation of the ORM very well, I did this my
 
 Then I let it continue.
 
-# Inspect database
+# Prisma
+Inspect:
 npx prisma studio => http://localhost:51212/
+
+If a migration is not visible in the code, try generating it (versus running Gemini again).
+npx prisma generate
