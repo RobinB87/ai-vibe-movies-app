@@ -4,8 +4,9 @@ CREATE TABLE "Movie" (
     "name" TEXT NOT NULL,
     "year" INTEGER NOT NULL,
     "genre" TEXT NOT NULL,
-    "myRating" INTEGER NOT NULL,
-    "review" TEXT NOT NULL,
+    "myRating" DOUBLE PRECISION,
+    "review" TEXT,
+    "isOnWatchlist" BOOLEAN,
 
     CONSTRAINT "Movie_pkey" PRIMARY KEY ("id")
 );
