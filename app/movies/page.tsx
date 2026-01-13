@@ -11,12 +11,21 @@ const MoviesPage = () => {
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState<string>('');
+  const [showWatchlistOnly, setShowWatchlistOnly] = useState<boolean>(false);
 
   useEffect(() => {
     const fetchMovies = async () => {
       setLoading(true);
       try {
-        const res = await fetch(`/api/movies?search=${searchTerm}`);
+        const url = new URL('/api/movies', window.location.origin);
+        if (searchTerm) {
+          url.searchParams.set('search', searchTerm);
+        }
+        if (showWatchlistOnly) {
+          url.searchParams.set('watchlist', 'true');
+        }
+
+        const res = await fetch(url.toString());
         if (!res.ok) {
           throw new Error(`HTTP error! status: ${res.status}`);
         }
@@ -29,7 +38,7 @@ const MoviesPage = () => {
       }
     };
     fetchMovies();
-  }, [searchTerm]);
+  }, [searchTerm, showWatchlistOnly]);
 
   if (error) return <div className="p-8 text-red-500">Error: {error}</div>;
 
@@ -41,14 +50,22 @@ const MoviesPage = () => {
           Add New Movie
         </Link>
       </div>
-      <div className="mb-6">
+      <div className="mb-6 flex gap-4">
         <input
           type="text"
           placeholder="Search for a movie..."
-          className="w-full p-2 border border-gray-300 rounded"
+          className="flex-grow p-2 border border-gray-300 rounded"
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
         />
+        <button
+          onClick={() => setShowWatchlistOnly(!showWatchlistOnly)}
+          className={`px-4 py-2 rounded ${
+            showWatchlistOnly ? 'bg-indigo-600 text-white' : 'bg-gray-200 text-gray-800'
+          } hover:bg-indigo-700 hover:text-white transition-colors duration-200`}
+        >
+          {showWatchlistOnly ? 'Show All Movies' : 'Show Watchlist'}
+        </button>
       </div>
       {loading ? (
         <div className="p-8">Loading movies...</div>

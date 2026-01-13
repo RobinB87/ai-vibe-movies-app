@@ -17,6 +17,8 @@ Add a search bar in the UI in the list view
 Create a migration for the movie model with a new boolean property isOnWatchlist, by default this property should be undefined
 Then update the API (POST vs EDIT) accordingly
 Then update the UI (POST vs EDIT) accordingly
+Add button to only show films on the watchlist
+Make the re
 
 # Methodology
 Use TDD to create the app.

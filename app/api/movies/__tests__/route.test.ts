@@ -34,7 +34,7 @@ describe('Movies API', () => {
       expect(response.status).toBe(200);
       expect(data).toEqual(mockMovies);
       expect(prisma.movie.findMany).toHaveBeenCalledTimes(1);
-      expect(prisma.movie.findMany).toHaveBeenCalledWith();
+      expect(prisma.movie.findMany).toHaveBeenCalledWith({ where: undefined });
     });
 
     it('should return movies matching the search term in name', async () => {
@@ -126,21 +126,48 @@ describe('Movies API', () => {
       });
     });
 
-    it('should return all movies if search term is empty', async () => {
+    it('should return only movies on the watchlist if watchlist=true', async () => {
       const mockMovies = [
-        { id: 1, name: 'Movie 1', year: 2020, genre: 'Action', myRating: 5, review: 'Great' },
-        { id: 2, name: 'Movie 2', year: 2021, genre: 'Comedy', myRating: 4, review: 'Funny' },
+        { id: 1, name: 'Watchlist Movie 1', year: 2020, genre: 'Action', myRating: 5, review: 'Great', isOnWatchlist: true },
+        { id: 3, name: 'Watchlist Movie 2', year: 2022, genre: 'Thriller', myRating: 3, review: 'Intense plot', isOnWatchlist: true },
       ];
       (prisma.movie.findMany as jest.Mock).mockResolvedValue(mockMovies);
 
-      const request = new Request('http://localhost:3000/api/movies?search='); // Empty search term
+      const request = new Request('http://localhost:3000/api/movies?watchlist=true');
       const response = await GET(request);
       const data = await response.json();
 
       expect(response.status).toBe(200);
       expect(data).toEqual(mockMovies);
-      expect(prisma.movie.findMany).toHaveBeenCalledTimes(1);
-      expect(prisma.movie.findMany).toHaveBeenCalledWith(); // Should call without a where clause
+      expect(prisma.movie.findMany).toHaveBeenCalledWith({
+        where: {
+          isOnWatchlist: true,
+        },
+      });
+    });
+
+    it('should return movies matching search term and on watchlist if both are provided', async () => {
+      const mockMovies = [
+        { id: 1, name: 'Watchlist Action Movie', year: 2020, genre: 'Action', myRating: 5, review: 'Great', isOnWatchlist: true },
+      ];
+      (prisma.movie.findMany as jest.Mock).mockResolvedValue(mockMovies);
+
+      const request = new Request('http://localhost:3000/api/movies?search=Action&watchlist=true');
+      const response = await GET(request);
+      const data = await response.json();
+
+      expect(response.status).toBe(200);
+      expect(data).toEqual(mockMovies);
+      expect(prisma.movie.findMany).toHaveBeenCalledWith({
+        where: {
+          OR: [
+            { name: { contains: 'Action', mode: 'insensitive' } },
+            { genre: { contains: 'Action', mode: 'insensitive' } },
+            { review: { contains: 'Action', mode: 'insensitive' } },
+          ],
+          isOnWatchlist: true,
+        },
+      });
     });
   });
 

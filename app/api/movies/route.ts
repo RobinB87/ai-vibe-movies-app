@@ -4,21 +4,26 @@ import { NextResponse } from 'next/server';
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
   const searchTerm = searchParams.get('search');
+  const showWatchlist = searchParams.get('watchlist');
 
-  let movies;
+  const whereClause: any = {};
+
   if (searchTerm) {
-    movies = await prisma.movie.findMany({
-      where: {
-        OR: [
-          { name: { contains: searchTerm, mode: 'insensitive' } },
-          { genre: { contains: searchTerm, mode: 'insensitive' } },
-          { review: { contains: searchTerm, mode: 'insensitive' } },
-        ],
-      },
-    });
-  } else {
-    movies = await prisma.movie.findMany();
+    whereClause.OR = [
+      { name: { contains: searchTerm, mode: 'insensitive' } },
+      { genre: { contains: searchTerm, mode: 'insensitive' } },
+      { review: { contains: searchTerm, mode: 'insensitive' } },
+    ];
   }
+
+  if (showWatchlist === 'true') {
+    whereClause.isOnWatchlist = true;
+  }
+
+  const movies = await prisma.movie.findMany({
+    where: Object.keys(whereClause).length > 0 ? whereClause : undefined,
+  });
+
   return NextResponse.json(movies);
 }
 
