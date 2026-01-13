@@ -3,7 +3,7 @@ export interface Movie {
   name: string;
   year: number;
   genre: string;
-  myRating: number;
-  review: string;
+  myRating?: number;
+  review?: string;
   isOnWatchlist?: boolean;
 }
