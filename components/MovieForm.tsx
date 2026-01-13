@@ -4,6 +4,7 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { Movie } from '@/types/movie';
+import { useMovies } from '@/app/context/MovieContext'; 
 import { defaultMovie } from '@/constants/movie';
 
 interface MovieFormProps {
@@ -12,6 +13,7 @@ interface MovieFormProps {
 
 const MovieForm: React.FC<MovieFormProps> = ({ initialMovie }) => {
   const router = useRouter();
+  const { addMovie, updateMovie } = useMovies(); 
   const [movie, setMovie] = useState<Movie>(
     initialMovie || defaultMovie
   );
@@ -80,18 +82,13 @@ const MovieForm: React.FC<MovieFormProps> = ({ initialMovie }) => {
 
       const result = await res.json();
       setSuccess(movie.id ? 'Movie updated successfully!' : 'Movie added successfully!');
-      if (!movie.id) {
-        setMovie({
-          name: '',
-          year: 2023,
-          genre: '',
-          myRating: 5,
-          review: '',
-          isOnWatchlist: false,
-        }); // Clear form for new movie
+      
+      if (movie.id) {
+        updateMovie(result); 
+      } else {
+        addMovie(result); 
       }
-      router.push('/movies'); // Redirect to movies list after submission
-      router.refresh(); // Refresh the page to show new/updated movie
+      router.push('/movies'); 
     } catch (e: any) {
       setError(e.message);
     } finally {

@@ -1,46 +1,20 @@
 // app/movies/page.tsx
 'use client';
 
-import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import MovieCard from '../../components/MovieCard';
-import { Movie } from '@/types/movie';
-import useDebounce from '@/lib/hooks/useDebounce'; 
+import { useMovies } from '@/app/context/MovieContext'; // Import the useMovies hook
 
 const MoviesPage = () => {
-  const [movies, setMovies] = useState<Movie[]>([]);
-  const [loading, setLoading] = useState<boolean>(true);
-  const [error, setError] = useState<string | null>(null);
-  const [searchTerm, setSearchTerm] = useState<string>('');
-  const debouncedSearchTerm = useDebounce(searchTerm, 500); 
-  const [showWatchlistOnly, setShowWatchlistOnly] = useState<boolean>(false);
-
-  useEffect(() => {
-    const fetchMovies = async () => {
-      setLoading(true);
-      try {
-        const url = new URL('/api/movies', window.location.origin);
-        if (debouncedSearchTerm) {
-          url.searchParams.set('search', debouncedSearchTerm);
-        }
-        if (showWatchlistOnly) {
-          url.searchParams.set('watchlist', 'true');
-        }
-
-        const res = await fetch(url.toString());
-        if (!res.ok) {
-          throw new Error(`HTTP error! status: ${res.status}`);
-        }
-        const data = await res.json();
-        setMovies(data);
-      } catch (e: any) {
-        setError(e.message);
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchMovies();
-  }, [debouncedSearchTerm, showWatchlistOnly]);
+  const {
+    movies,
+    loading,
+    error,
+    searchTerm,
+    setSearchTerm,
+    showWatchlistOnly,
+    setShowWatchlistOnly,
+  } = useMovies();
 
   if (error) return <div className="p-8 text-red-500">Error: {error}</div>;
 
