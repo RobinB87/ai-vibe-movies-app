@@ -42,6 +42,7 @@ UPDATE THIS GEMINI FILE -- getting too cluttered
 Endpoints need to have authorization
 Salt and hash the password
 Use JWT tokens
+Temporary login in MovieContext: Remember to replace with proper auth context and token handling.
 
 Move myRating, review and isOnWatchlist to a new table
 Rename myRating to just rating
