@@ -3,27 +3,22 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import { Movie } from '@/types/movie';
 
 interface MovieFormProps {
-  initialMovie?: {
-    id?: number;
-    name: string;
-    year: number;
-    genre: string;
-    myRating: number;
-    review: string;
-  };
+  initialMovie?: Movie;
 }
 
 const MovieForm: React.FC<MovieFormProps> = ({ initialMovie }) => {
   const router = useRouter();
-  const [movie, setMovie] = useState(
+  const [movie, setMovie] = useState<Movie>(
     initialMovie || {
       name: '',
       year: 2023,
       genre: '',
       myRating: 5,
       review: '',
+      isOnWatchlist: false, // Default to false for new movies
     }
   );
   const [loading, setLoading] = useState(false);
@@ -38,9 +33,19 @@ const MovieForm: React.FC<MovieFormProps> = ({ initialMovie }) => {
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
+    let newValue: string | number | boolean;
+
+    if (e.target instanceof HTMLInputElement && e.target.type === 'checkbox') {
+      newValue = e.target.checked;
+    } else if (name === 'year' || name === 'myRating') {
+      newValue = Number(value);
+    } else {
+      newValue = value;
+    }
+
     setMovie((prevMovie) => ({
       ...prevMovie,
-      [name]: name === 'year' || name === 'myRating' ? Number(value) : value,
+      [name]: newValue,
     }));
   };
 
@@ -76,6 +81,7 @@ const MovieForm: React.FC<MovieFormProps> = ({ initialMovie }) => {
           genre: '',
           myRating: 5,
           review: '',
+          isOnWatchlist: false,
         }); // Clear form for new movie
       }
       router.push('/movies'); // Redirect to movies list after submission
@@ -155,6 +161,17 @@ const MovieForm: React.FC<MovieFormProps> = ({ initialMovie }) => {
             required
             className="mt-1 block w-full p-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
           ></textarea>
+        </div>
+        <div className="flex items-center">
+          <input
+            type="checkbox"
+            id="isOnWatchlist"
+            name="isOnWatchlist"
+            checked={movie.isOnWatchlist || false} // Ensure it's always a boolean for the input
+            onChange={handleChange}
+            className="h-4 w-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+          />
+          <label htmlFor="isOnWatchlist" className="ml-2 block text-sm font-medium text-gray-700">Add to Watchlist</label>
         </div>
         <button
           type="submit"
