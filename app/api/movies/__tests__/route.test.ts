@@ -1,18 +1,16 @@
-import { PrismaClient } from '@prisma/client/extension';
 import { GET, POST } from '../route';
+import prisma from '@/lib/prisma';
 
-// Mock PrismaClient
-jest.mock('@prisma/client', () => {
-  const mockPrismaClient = {
+// Mock the prisma instance
+jest.mock('@/lib/prisma', () => ({
+  __esModule: true,
+  default: {
     movie: {
       findMany: jest.fn(),
       create: jest.fn(),
     },
-  };
-  return { PrismaClient: jest.fn(() => mockPrismaClient) };
-});
-
-const prisma = new PrismaClient();
+  },
+}));
 
 describe('Movies API', () => {
   beforeEach(() => {

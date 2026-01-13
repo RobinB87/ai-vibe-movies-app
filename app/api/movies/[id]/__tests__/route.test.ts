@@ -1,20 +1,17 @@
 import { GET, PUT, DELETE } from '../route';
-import { PrismaClient } from '@prisma/client';
-import { NextResponse } from 'next/server';
+import prisma from '@/lib/prisma';
 
-// Mock PrismaClient
-jest.mock('@prisma/client', () => {
-  const mockPrismaClient = {
+// Mock the prisma instance
+jest.mock('@/lib/prisma', () => ({
+  __esModule: true,
+  default: {
     movie: {
       findUnique: jest.fn(),
       update: jest.fn(),
       delete: jest.fn(),
     },
-  };
-  return { PrismaClient: jest.fn(() => mockPrismaClient) };
-});
-
-const prisma = new PrismaClient();
+  },
+}));
 
 describe('Movie by ID API', () => {
   beforeEach(() => {
@@ -97,7 +94,7 @@ describe('Movie by ID API', () => {
     });
 
     it('should return 404 if movie to delete is not found', async () => {
-      (prisma.movie.delete as jest.Mock).mockRejectedValue(new Error('Movie not found'));
+      (prisma.movie.delete as jest.Mock).mockRejectedValue(new Error('Movie not.\nFound'));
 
       const response = await DELETE({} as Request, { params: { id: '99' } });
       const data = await response.json();
