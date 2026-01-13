@@ -28,13 +28,13 @@ Use TDD to create the app.
 First create the API and database part so that I can test it with Postman. If I'm happy continue with the UI.
 
 # Todo list. Do not start working on this until I add it to the requirements.
-Fix tests for updating a movie without rating / review.
-Ensure API is not called constantly. 
-    First, start with adding debounce on search. 
-    Second, after adding or updating a movie just update the movie list locally as well. As we are going to a different page we might need to have some statemanagement or a react context.
-    I might add other requirements later.
+Ensure API is not called constantly. First, start with adding debounce on search. 
+Second, after adding or updating a movie just update the movie list locally as well. As we are going to a different page we might need to have some statemanagement or a react context.
 Add user model with email and name
 Move rating, review and isOnWatchlist to a new table (hence also rename myRating to just rating)
-Create a login page. Users can only see the movies they added.
+Create a login component and add this to main page if user is not logged in. Users should be able to only see movies they added.
 Show overall rating of the movie as well
 Show other users reviews, anonimized
+
+Fix tests for updating a movie without rating / review.
+Fix height for movie card in the grid. Just use like 150 height and end review with ... if it does not fit. 
