@@ -6,4 +6,5 @@ export interface Movie {
   rating?: number;
   review?: string;
   isOnWatchlist?: boolean;
+  createdByUserId?: number;
 }
