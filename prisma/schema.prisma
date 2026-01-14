@@ -14,14 +14,23 @@ datasource db {
 }
 
 model Movie {
-  id        Int     @id @default(autoincrement())
-  name      String
-  year      Int
-  genre     String
-  rating    Float?
-  review    String?
-  isOnWatchlist Boolean?
-  userMoviePreferences UserMoviePreference[]
+  id                    Int     @id @default(autoincrement())
+  name                  String
+  year                  Int
+  genre                 String
+
+  rating                Float?
+  review                String?
+  isOnWatchlist         Boolean?
+
+  userMoviePreferences  UserMoviePreference[]
+
+  createdByUserId Int?
+  createdByUser   User? @relation(
+    fields: [userId],
+    references: [id],
+    onDelete: SetNull
+  )
 
   @@unique([name, year])
 }
@@ -31,6 +40,7 @@ model User {
   email    String   @unique
   name     String
   password String
+  movies   Movie[]
   userMoviePreferences UserMoviePreference[]
 }
 
