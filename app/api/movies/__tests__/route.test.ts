@@ -173,7 +173,7 @@ describe('Movies API', () => {
 
   describe('POST /api/movies', () => {
     it('should create a new movie with isOnWatchlist property', async () => {
-      const newMovieData = { name: 'Watchlist Movie', year: 2024, genre: 'Sci-Fi', rating: 4.5, review: 'Intriguing', isOnWatchlist: true };
+      const newMovieData = { name: 'Watchlist Movie', year: 2024, genre: 'Sci-Fi', rating: 4.5, review: 'Intriguing', isOnWatchlist: true, createdByUserId: 1 };
       const createdMovie = { id: 4, ...newMovieData };
       (prisma.movie.create as jest.Mock).mockResolvedValue(createdMovie);
 
@@ -191,7 +191,7 @@ describe('Movies API', () => {
     });
 
     it('should create a new movie without isOnWatchlist property', async () => {
-      const newMovieData = { name: 'New Movie', year: 2023, genre: 'Drama', rating: 3, review: 'Good' };
+      const newMovieData = { name: 'New Movie', year: 2023, genre: 'Drama', rating: 3, review: 'Good', createdByUserId: 1 };
       const createdMovie = { id: 3, ...newMovieData, isOnWatchlist: null }; // Prisma returns null for undefined optional fields
       (prisma.movie.create as jest.Mock).mockResolvedValue(createdMovie);
 
@@ -209,7 +209,7 @@ describe('Movies API', () => {
     });
 
     it('should create a new movie without rating and review properties', async () => {
-      const newMovieData = { name: 'Movie without Rating/Review', year: 2023, genre: 'Fantasy', isOnWatchlist: false };
+      const newMovieData = { name: 'Movie without Rating/Review', year: 2023, genre: 'Fantasy', isOnWatchlist: false, createdByUserId: 1 };
       const createdMovie = { id: 5, ...newMovieData, rating: null, review: null }; // Prisma returns null for optional fields not provided
       (prisma.movie.create as jest.Mock).mockResolvedValue(createdMovie);
 

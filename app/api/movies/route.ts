@@ -28,7 +28,9 @@ export async function GET(request: Request) {
 }
 
 export async function POST(request: Request) {
-  const { name, year, genre, rating, review, isOnWatchlist } = await request.json();
+  const { name, year, genre, rating, review, isOnWatchlist, createdByUserId } = await request.json();
+  if (!createdByUserId) return NextResponse.json({ error: 'Created By User ID is required' }, { status: 400 });
+
   const newMovie = await prisma.movie.create({
     data: {
       name,
@@ -37,6 +39,7 @@ export async function POST(request: Request) {
       rating,
       review,
       isOnWatchlist,
+      createdByUserId,
     },
   });
   return NextResponse.json(newMovie, { status: 201 });

@@ -13,10 +13,8 @@ interface MovieFormProps {
 
 const MovieForm: React.FC<MovieFormProps> = ({ initialMovie }) => {
   const router = useRouter();
-  const { addMovie, updateMovie } = useMovies(); 
-  const [movie, setMovie] = useState<Movie>(
-    initialMovie || defaultMovie
-  );
+  const { addMovie, updateMovie, currentUser } = useMovies(); 
+  const [movie, setMovie] = useState<Movie>(initialMovie || defaultMovie);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
@@ -66,6 +64,7 @@ const MovieForm: React.FC<MovieFormProps> = ({ initialMovie }) => {
       const movieToSubmit = Object.fromEntries(
         Object.entries(movie).filter(([, val]) => val !== undefined)
       );
+      movieToSubmit.createdByUserId = currentUser?.id;
 
       const res = await fetch(url, {
         method,
