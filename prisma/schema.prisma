@@ -42,6 +42,7 @@ model UserMoviePreference {
   review          String?
   isOnWatchlist   Boolean?
 
+
   user            User      @relation(fields: [userId], references: [id])
   movie           Movie     @relation(fields: [movieId], references: [id])
 

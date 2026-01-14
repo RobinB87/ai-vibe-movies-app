@@ -5,4 +5,6 @@ export interface UserMoviePreference {
   rating?: number;
   review?: string;
   isOnWatchlist?: boolean;
+  createdAt: Date;
+  updatedAt: Date;
 }
