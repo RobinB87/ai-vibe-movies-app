@@ -1,4 +1,5 @@
 # Todo list. Do not start working on this until I add it to the requirements.
+Only admins can edit movies
 Endpoints need to have authorization
 Salt and hash the password
 Use JWT tokens
