@@ -15,12 +15,15 @@ datasource db {
 
 model Movie {
   id        Int     @id @default(autoincrement())
-  name      String  @unique
+  name      String
   year      Int
   genre     String
   rating    Float?
   review    String?
   isOnWatchlist Boolean?
+  userMoviePreferences UserMoviePreference[]
+
+  @@unique([name, year])
 }
 
 model User {
@@ -28,4 +31,19 @@ model User {
   email    String   @unique
   name     String
   password String
+  userMoviePreferences UserMoviePreference[]
+}
+
+model UserMoviePreference {
+  id              Int       @id @default(autoincrement())
+  userId          Int
+  movieId         Int
+  rating          Float?
+  review          String?
+  isOnWatchlist   Boolean?
+
+  user            User      @relation(fields: [userId], references: [id])
+  movie           Movie     @relation(fields: [movieId], references: [id])
+
+  @@unique([userId, movieId])
 }
