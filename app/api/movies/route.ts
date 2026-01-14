@@ -28,13 +28,13 @@ export async function GET(request: Request) {
 }
 
 export async function POST(request: Request) {
-  const { name, year, genre, myRating, review, isOnWatchlist } = await request.json();
+  const { name, year, genre, rating, review, isOnWatchlist } = await request.json();
   const newMovie = await prisma.movie.create({
     data: {
       name,
       year,
       genre,
-      myRating,
+      rating,
       review,
       isOnWatchlist,
     },

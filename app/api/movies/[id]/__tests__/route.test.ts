@@ -20,7 +20,7 @@ describe('Movie by ID API', () => {
 
   describe('GET /api/movies/[id]', () => {
     it('should return a movie if found', async () => {
-      const mockMovie = { id: 1, name: 'Movie 1', year: 2020, genre: 'Action', myRating: 5, review: 'Great' };
+      const mockMovie = { id: 1, name: 'Movie 1', year: 2020, genre: 'Action', rating: 5, review: 'Great', userId: 1 };
       (prisma.movie.findUnique as jest.Mock).mockResolvedValue(mockMovie);
 
       const response = await GET({} as Request, { params: { id: '1' } });
@@ -44,8 +44,8 @@ describe('Movie by ID API', () => {
 
   describe('PUT /api/movies/[id]', () => {
     it('should update an existing movie', async () => {
-      const updatedMovieData = { name: 'Updated Movie', year: 2022, genre: 'Sci-Fi', myRating: 4, review: 'Good', isOnWatchlist: true };
-      const existingMovie = { id: 1, name: 'Movie 1', year: 2020, genre: 'Action', myRating: 5, review: 'Great', isOnWatchlist: undefined };
+      const updatedMovieData = { name: 'Updated Movie', year: 2022, genre: 'Sci-Fi', rating: 4, review: 'Good', isOnWatchlist: true };
+      const existingMovie = { id: 1, name: 'Movie 1', year: 2020, genre: 'Action', rating: 5, review: 'Great', isOnWatchlist: undefined };
       const updatedMovie = { id: 1, ...updatedMovieData };
       
       // Mock findUnique to simulate movie existing for the update operation
@@ -63,13 +63,15 @@ describe('Movie by ID API', () => {
       expect(data).toEqual(updatedMovie);
       expect(prisma.movie.update).toHaveBeenCalledWith({
         where: { id: 1 },
-        data: updatedMovieData,
+        data: {
+          name: 'Updated Movie', year: 2022, genre: 'Sci-Fi', rating: 4, review: 'Good', isOnWatchlist: true,
+        },
       });
     });
 
     it('should update an existing movie without changing isOnWatchlist if not provided', async () => {
-      const updatedMovieData = { name: 'Updated Movie Only Name', year: 2022, genre: 'Sci-Fi', myRating: 4, review: 'Good' };
-      const existingMovie = { id: 2, name: 'Movie 2', year: 2021, genre: 'Comedy', myRating: 3, review: 'Funny', isOnWatchlist: true };
+      const updatedMovieData = { name: 'Updated Movie Only Name', year: 2022, genre: 'Sci-Fi', rating: 4, review: 'Good' };
+      const existingMovie = { id: 2, name: 'Movie 2', year: 2021, genre: 'Comedy', rating: 3, review: 'Funny', isOnWatchlist: true };
       const updatedMovie = { ...existingMovie, ...updatedMovieData };
       
       (prisma.movie.findUnique as jest.Mock).mockResolvedValue(existingMovie);
@@ -86,14 +88,14 @@ describe('Movie by ID API', () => {
       expect(data).toEqual(updatedMovie);
       expect(prisma.movie.update).toHaveBeenCalledWith({
         where: { id: 2 },
-        data: updatedMovieData,
+        data: { name: 'Updated Movie Only Name', year: 2022, genre: 'Sci-Fi', rating: 4, review: 'Good' },
       });
     });
 
-    it('should update an existing movie without myRating and review properties', async () => {
+    it('should update an existing movie without rating and review properties', async () => {
       const updatedMovieData = { name: 'Updated Movie No Rating/Review', year: 2023, genre: 'Fantasy', isOnWatchlist: true };
-      const existingMovie = { id: 3, name: 'Movie with Rating/Review', year: 2020, genre: 'Drama', myRating: 8, review: 'Very good', isOnWatchlist: false };
-      const updatedMovie = { ...existingMovie, ...updatedMovieData, myRating: null, review: null };
+      const existingMovie = { id: 3, name: 'Movie with Rating/Review', year: 2020, genre: 'Drama', rating: 8, review: 'Very good', isOnWatchlist: false };
+      const updatedMovie = { ...existingMovie, ...updatedMovieData, rating: null, review: null };
       
       (prisma.movie.findUnique as jest.Mock).mockResolvedValue(existingMovie);
       (prisma.movie.update as jest.Mock).mockResolvedValue(updatedMovie);
@@ -109,12 +111,12 @@ describe('Movie by ID API', () => {
       expect(data).toEqual(updatedMovie);
       expect(prisma.movie.update).toHaveBeenCalledWith({
         where: { id: 3 },
-        data: updatedMovieData,
+        data: { name: 'Updated Movie No Rating/Review', year: 2023, genre: 'Fantasy', isOnWatchlist: true },
       });
     });
 
     it('should return 404 if movie to update is not found', async () => {
-      const updatedMovieData = { name: 'Updated Movie', year: 2022, genre: 'Sci-Fi', myRating: 4, review: 'Good' };
+      const updatedMovieData = { name: 'Updated Movie', year: 2022, genre: 'Sci-Fi', rating: 4, review: 'Good' };
       (prisma.movie.update as jest.Mock).mockRejectedValue(new Error('Movie not found'));
 
       const mockRequest = {

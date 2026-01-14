@@ -21,8 +21,8 @@ describe('Movies API', () => {
   describe('GET /api/movies', () => {
     it('should return all movies', async () => {
       const mockMovies = [
-        { id: 1, name: 'Movie 1', year: 2020, genre: 'Action', myRating: 5, review: 'Great' },
-        { id: 2, name: 'Movie 2', year: 2021, genre: 'Comedy', myRating: 4, review: 'Funny' },
+        { id: 1, name: 'Movie 1', year: 2020, genre: 'Action', rating: 5, review: 'Great' },
+        { id: 2, name: 'Movie 2', year: 2021, genre: 'Comedy', rating: 4, review: 'Funny' },
       ];
       (prisma.movie.findMany as jest.Mock).mockResolvedValue(mockMovies);
 
@@ -39,7 +39,7 @@ describe('Movies API', () => {
 
     it('should return movies matching the search term in name', async () => {
       const mockMovies = [
-        { id: 1, name: 'Movie A', year: 2020, genre: 'Action', myRating: 5, review: 'Great' },
+        { id: 1, name: 'Movie A', year: 2020, genre: 'Action', rating: 5, review: 'Great' },
       ];
       (prisma.movie.findMany as jest.Mock).mockResolvedValue(mockMovies);
 
@@ -62,7 +62,7 @@ describe('Movies API', () => {
 
     it('should return movies matching the search term in genre', async () => {
       const mockMovies = [
-        { id: 2, name: 'Film B', year: 2021, genre: 'Comedy', myRating: 4, review: 'Funny' },
+        { id: 2, name: 'Film B', year: 2021, genre: 'Comedy', rating: 4, review: 'Funny' },
       ];
       (prisma.movie.findMany as jest.Mock).mockResolvedValue(mockMovies);
 
@@ -85,7 +85,7 @@ describe('Movies API', () => {
 
     it('should return movies matching the search term in review', async () => {
       const mockMovies = [
-        { id: 3, name: 'Movie C', year: 2022, genre: 'Thriller', myRating: 3, review: 'Intense plot' },
+        { id: 3, name: 'Movie C', year: 2022, genre: 'Thriller', rating: 3, review: 'Intense plot' },
       ];
       (prisma.movie.findMany as jest.Mock).mockResolvedValue(mockMovies);
 
@@ -128,8 +128,8 @@ describe('Movies API', () => {
 
     it('should return only movies on the watchlist if watchlist=true', async () => {
       const mockMovies = [
-        { id: 1, name: 'Watchlist Movie 1', year: 2020, genre: 'Action', myRating: 5, review: 'Great', isOnWatchlist: true },
-        { id: 3, name: 'Watchlist Movie 2', year: 2022, genre: 'Thriller', myRating: 3, review: 'Intense plot', isOnWatchlist: true },
+        { id: 1, name: 'Watchlist Movie 1', year: 2020, genre: 'Action', rating: 5, review: 'Great', isOnWatchlist: true },
+        { id: 3, name: 'Watchlist Movie 2', year: 2022, genre: 'Thriller', rating: 3, review: 'Intense plot', isOnWatchlist: true },
       ];
       (prisma.movie.findMany as jest.Mock).mockResolvedValue(mockMovies);
 
@@ -148,7 +148,7 @@ describe('Movies API', () => {
 
     it('should return movies matching search term and on watchlist if both are provided', async () => {
       const mockMovies = [
-        { id: 1, name: 'Watchlist Action Movie', year: 2020, genre: 'Action', myRating: 5, review: 'Great', isOnWatchlist: true },
+        { id: 1, name: 'Watchlist Action Movie', year: 2020, genre: 'Action', rating: 5, review: 'Great', isOnWatchlist: true },
       ];
       (prisma.movie.findMany as jest.Mock).mockResolvedValue(mockMovies);
 
@@ -173,7 +173,7 @@ describe('Movies API', () => {
 
   describe('POST /api/movies', () => {
     it('should create a new movie with isOnWatchlist property', async () => {
-      const newMovieData = { name: 'Watchlist Movie', year: 2024, genre: 'Sci-Fi', myRating: 4.5, review: 'Intriguing', isOnWatchlist: true };
+      const newMovieData = { name: 'Watchlist Movie', year: 2024, genre: 'Sci-Fi', rating: 4.5, review: 'Intriguing', isOnWatchlist: true };
       const createdMovie = { id: 4, ...newMovieData };
       (prisma.movie.create as jest.Mock).mockResolvedValue(createdMovie);
 
@@ -191,7 +191,7 @@ describe('Movies API', () => {
     });
 
     it('should create a new movie without isOnWatchlist property', async () => {
-      const newMovieData = { name: 'New Movie', year: 2023, genre: 'Drama', myRating: 3, review: 'Good' };
+      const newMovieData = { name: 'New Movie', year: 2023, genre: 'Drama', rating: 3, review: 'Good' };
       const createdMovie = { id: 3, ...newMovieData, isOnWatchlist: null }; // Prisma returns null for undefined optional fields
       (prisma.movie.create as jest.Mock).mockResolvedValue(createdMovie);
 
@@ -208,9 +208,9 @@ describe('Movies API', () => {
       expect(prisma.movie.create).toHaveBeenCalledTimes(1);
     });
 
-    it('should create a new movie without myRating and review properties', async () => {
+    it('should create a new movie without rating and review properties', async () => {
       const newMovieData = { name: 'Movie without Rating/Review', year: 2023, genre: 'Fantasy', isOnWatchlist: false };
-      const createdMovie = { id: 5, ...newMovieData, myRating: null, review: null }; // Prisma returns null for optional fields not provided
+      const createdMovie = { id: 5, ...newMovieData, rating: null, review: null }; // Prisma returns null for optional fields not provided
       (prisma.movie.create as jest.Mock).mockResolvedValue(createdMovie);
 
       const mockRequest = {

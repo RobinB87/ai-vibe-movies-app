@@ -18,7 +18,7 @@ const MovieCard: React.FC<MovieCardProps> = ({ movie }) => {
           )}
         </h2>
         <p><strong>Genre:</strong> {movie.genre}</p>
-        {movie.myRating !== undefined && movie.myRating !== null && <p><strong>My Rating:</strong> {movie.myRating}/10</p>}
+        {movie.rating !== undefined && movie.rating !== null && <p><strong>Rating:</strong> {movie.rating}/10</p>}
         {movie.review && <p><strong>Review:</strong> {movie.review}</p>}
       </div>
     </Link>

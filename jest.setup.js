@@ -1,3 +1,5 @@
+import '@testing-library/jest-dom';
+
 jest.mock('next/server', () => ({
   NextResponse: {
     json: jest.fn((data, init) => {

@@ -35,7 +35,7 @@ const MovieForm: React.FC<MovieFormProps> = ({ initialMovie }) => {
       newValue = e.target.checked;
     } else if (name === 'year') {
       newValue = Number(value);
-    } else if (name === 'myRating') {
+    } else if (name === 'rating') {
       // If the input is empty for an optional number field, set to undefined
       newValue = value === '' ? undefined : Number(value);
     } else if (name === 'review') {
@@ -139,12 +139,12 @@ const MovieForm: React.FC<MovieFormProps> = ({ initialMovie }) => {
           />
         </div>
         <div>
-          <label htmlFor="myRating" className="block text-sm font-medium text-gray-700">My Rating (1-10)</label>
+          <label htmlFor="rating" className="block text-sm font-medium text-gray-700">Rating (1-10)</label>
           <input
             type="number"
-            id="myRating"
-            name="myRating"
-            value={movie.myRating ?? ''} // Use ?? '' for optional number inputs to avoid controlled component warning
+            id="rating"
+            name="rating"
+            value={movie.rating ?? ''} // Use ?? '' for optional number inputs to avoid controlled component warning
             onChange={handleChange}
             min="1"
             max="10"

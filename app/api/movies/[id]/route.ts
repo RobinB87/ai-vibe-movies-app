@@ -38,8 +38,8 @@ export async function PUT(request: Request, { params }: { params: { id: string |
   if ('isOnWatchlist' in body) {
     dataToUpdate.isOnWatchlist = body.isOnWatchlist;
   }
-  if ('myRating' in body) {
-    dataToUpdate.myRating = body.myRating;
+  if ('rating' in body) {
+    dataToUpdate.rating = body.rating;
   }
   if ('review' in body) {
     dataToUpdate.review = body.review;
