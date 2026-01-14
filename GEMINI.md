@@ -1,17 +1,11 @@
-# Goal 
-A simple movies API with frontend and database.
-
 # Rules
-Do not add comments at the top of a page stating which page it is.
-Do not add comments for imports.
-Do not remove my models or constants with new code.
-
-# Movie model
-name, year, genre, my rating (float) and a review (my description).
+Do not commit yourself
+Do not add the page name as a comment to the top of the page
+Do not add comments for imports
+If I created a model or constant to abstract some of your code, do not replace this with your code again (like defaultMovie)
 
 # Stack
-NextJS
-For ORM use Prisma
+Use NextJS with typescript and Prisma as ORM.
 
 # Methodology
 Use TDD to create the app.
