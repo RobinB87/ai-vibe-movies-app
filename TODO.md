@@ -1,8 +1,8 @@
 # Todo list. Do not start working on this until I add it to the requirements.
 Only admins can edit movies
-Endpoints need to have authorization
+Set up proper authentication
 Salt and hash the password
-Use JWT tokens
+Endpoints need to have authorization
 Temporary login in MovieContext: Remember to replace with proper auth context and token handling.
 
 Create a login component. A user does not need to be logged in. If he is not, he can see some default hard coded movies. He can also update and add them to a localStorage. If he logs in it will be saved automatically to his account.
