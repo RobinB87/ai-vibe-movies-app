@@ -1,6 +1,8 @@
 # Todo list. Do not start working on this until I add it to the requirements.
 
 Add login button and change text to see default movies, or log in
+In POST: get user from session?
+Format, update prettier
 
 Add user to DB + only admins can edit movies
 Set up proper authentication
