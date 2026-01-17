@@ -57,7 +57,7 @@ const MoviesPage = () => {
           <LogOutButton />
         ) : (
           <button>
-            <Link href="/login">Login</Link>
+            <Link href="/auth/login">Login</Link>
           </button>
         )}
       </div>
