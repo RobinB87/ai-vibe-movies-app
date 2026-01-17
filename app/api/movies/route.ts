@@ -1,30 +1,62 @@
 import prisma from "@/lib/prisma";
 import { NextResponse } from "next/server";
+import { getUserFromSession } from "@/app/api/auth/core/session";
 
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
   const searchTerm = searchParams.get("search");
   const showWatchlist = searchParams.get("watchlist");
 
-  const whereClause: any = {};
+  const session = await getUserFromSession();
+  const userId = session?.id ? +session.id : null;
+
+  if (!userId) {
+    return NextResponse.json([]);
+  }
+
+  const whereClause: any = {
+    createdByUserId: userId,
+  };
 
   if (searchTerm) {
     whereClause.OR = [
       { name: { contains: searchTerm, mode: "insensitive" } },
       { genre: { contains: searchTerm, mode: "insensitive" } },
-      { review: { contains: searchTerm, mode: "insensitive" } },
     ];
   }
 
   if (showWatchlist === "true") {
-    whereClause.isOnWatchlist = true;
+    whereClause.userMoviePreferences = {
+      some: {
+        userId,
+        isOnWatchlist: true,
+      },
+    };
   }
 
   const movies = await prisma.movie.findMany({
-    where: Object.keys(whereClause).length > 0 ? whereClause : undefined,
+    where: whereClause,
+    include: {
+      userMoviePreferences: {
+        where: { userId },
+        select: { rating: true, review: true, isOnWatchlist: true },
+      },
+    },
   });
 
-  return NextResponse.json(movies);
+  // Flatten the response: merge user's preferences into movie object
+  const moviesWithPreferences = movies.map((movie) => {
+    const { userMoviePreferences, ...movieData } = movie as any;
+    const preference = userMoviePreferences?.[0];
+    return {
+      ...movieData,
+      rating: preference?.rating ?? null,
+      review: preference?.review ?? null,
+      isOnWatchlist: preference?.isOnWatchlist ?? false,
+    };
+  });
+
+  return NextResponse.json(moviesWithPreferences);
 }
 
 export async function POST(request: Request) {

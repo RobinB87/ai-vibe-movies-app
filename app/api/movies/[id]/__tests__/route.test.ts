@@ -1,5 +1,6 @@
 import { GET, PUT, DELETE } from "../route";
 import prisma from "@/lib/prisma";
+import { getUserFromSession } from "@/app/api/auth/core/session";
 
 // Mock the prisma instance
 const mockMovieUpdate = jest.fn();
@@ -26,28 +27,85 @@ jest.mock("@/lib/prisma", () => ({
   },
 }));
 
+// Mock the session
+jest.mock("@/app/api/auth/core/session", () => ({
+  getUserFromSession: jest.fn(),
+}));
+
 describe("Movie by ID API", () => {
   beforeEach(() => {
     jest.clearAllMocks();
     mockMovieUpdate.mockClear();
     mockMovieDelete.mockClear();
     mockUserMoviePreferenceUpsert.mockClear();
+    (getUserFromSession as jest.Mock).mockResolvedValue({ id: "1", role: "user" });
   });
 
   describe("GET /api/movies/[id]", () => {
-    it("should return a movie if found", async () => {
-      const mockMovie = { id: 1, name: "Movie 1", year: 2020, genre: "Action", rating: 5, review: "Great", userId: 1 };
-      (prisma.movie.findUnique as jest.Mock).mockResolvedValue(mockMovie);
+    it("should return a movie created by current user with preferences", async () => {
+      const mockMovieFromDb = {
+        id: 1,
+        name: "Movie 1",
+        year: 2020,
+        genre: "Action",
+        createdByUserId: 1,
+        userMoviePreferences: [{ rating: 5, review: "Great", isOnWatchlist: true }],
+      };
+      (prisma.movie.findUnique as jest.Mock).mockResolvedValue(mockMovieFromDb);
 
       const response = await GET({} as Request, { params: Promise.resolve({ id: "1" }) });
       const data = await response.json();
 
       expect(response.status).toBe(200);
-      expect(data).toEqual(mockMovie);
-      expect(prisma.movie.findUnique).toHaveBeenCalledWith({ where: { id: 1 } });
+      expect(data).toEqual({
+        id: 1,
+        name: "Movie 1",
+        year: 2020,
+        genre: "Action",
+        createdByUserId: 1,
+        rating: 5,
+        review: "Great",
+        isOnWatchlist: true,
+      });
+      expect(prisma.movie.findUnique).toHaveBeenCalledWith({
+        where: { id: 1, createdByUserId: 1 },
+        include: {
+          userMoviePreferences: {
+            where: { userId: 1 },
+            select: { rating: true, review: true, isOnWatchlist: true },
+          },
+        },
+      });
     });
 
-    it("should return 404 if movie not found", async () => {
+    it("should return movie with null preferences when user has no preferences", async () => {
+      const mockMovieFromDb = {
+        id: 1,
+        name: "Movie 1",
+        year: 2020,
+        genre: "Action",
+        createdByUserId: 1,
+        userMoviePreferences: [],
+      };
+      (prisma.movie.findUnique as jest.Mock).mockResolvedValue(mockMovieFromDb);
+
+      const response = await GET({} as Request, { params: Promise.resolve({ id: "1" }) });
+      const data = await response.json();
+
+      expect(response.status).toBe(200);
+      expect(data).toEqual({
+        id: 1,
+        name: "Movie 1",
+        year: 2020,
+        genre: "Action",
+        createdByUserId: 1,
+        rating: null,
+        review: null,
+        isOnWatchlist: false,
+      });
+    });
+
+    it("should return 404 if movie not found or not owned by user", async () => {
       (prisma.movie.findUnique as jest.Mock).mockResolvedValue(null);
 
       const response = await GET({} as Request, { params: Promise.resolve({ id: "99" }) });
@@ -55,6 +113,17 @@ describe("Movie by ID API", () => {
 
       expect(response.status).toBe(404);
       expect(data).toEqual({ error: "Movie not found" });
+    });
+
+    it("should return 401 when not logged in", async () => {
+      (getUserFromSession as jest.Mock).mockResolvedValue(null);
+
+      const response = await GET({} as Request, { params: Promise.resolve({ id: "1" }) });
+      const data = await response.json();
+
+      expect(response.status).toBe(401);
+      expect(data).toEqual({ error: "Unauthorized" });
+      expect(prisma.movie.findUnique).not.toHaveBeenCalled();
     });
   });
 

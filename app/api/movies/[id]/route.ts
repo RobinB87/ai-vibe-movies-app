@@ -1,5 +1,6 @@
 import prisma from "@/lib/prisma";
 import { NextResponse } from "next/server";
+import { getUserFromSession } from "@/app/api/auth/core/session";
 
 export async function GET(_: Request, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
@@ -7,10 +8,35 @@ export async function GET(_: Request, { params }: { params: Promise<{ id: string
   const movieId = parseInt(String(id), 10);
   if (isNaN(movieId)) return NextResponse.json({ error: "Invalid movie ID" }, { status: 400 });
 
-  const movie = await prisma.movie.findUnique({ where: { id: movieId } });
+  const session = await getUserFromSession();
+  const userId = session?.id ? +session.id : null;
+
+  if (!userId) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
+  const movie = await prisma.movie.findUnique({
+    where: { id: movieId, createdByUserId: userId },
+    include: {
+      userMoviePreferences: {
+        where: { userId },
+        select: { rating: true, review: true, isOnWatchlist: true },
+      },
+    },
+  });
   if (!movie) return NextResponse.json({ error: "Movie not found" }, { status: 404 });
 
-  return NextResponse.json(movie);
+  // Flatten the response: merge user's preferences into movie object
+  const { userMoviePreferences, ...movieData } = movie as any;
+  const preference = userMoviePreferences?.[0];
+  const movieWithPreferences = {
+    ...movieData,
+    rating: preference?.rating ?? null,
+    review: preference?.review ?? null,
+    isOnWatchlist: preference?.isOnWatchlist ?? false,
+  };
+
+  return NextResponse.json(movieWithPreferences);
 }
 
 export async function PUT(request: Request, { params }: { params: Promise<{ id: string }> }) {
