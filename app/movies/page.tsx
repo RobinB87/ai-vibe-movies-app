@@ -40,7 +40,7 @@ const MoviesPage = () => {
     };
 
     fetchMovies();
-  }, []);
+  }, [debouncedSearchTerm, showWatchlistOnly]);
 
   if (error) return <div className="p-8 text-red-500">Error: {error}</div>;
 
