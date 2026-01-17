@@ -6,6 +6,14 @@ export async function GET() {
   const user = await getUserFromSession();
   if (!user) return NextResponse.json(user);
 
-  const fullUser = await prisma.user.findUnique({ where: { id: +user.id } });
+  const fullUser = await prisma.user.findUnique({
+    where: { id: +user.id },
+    select: {
+      id: true,
+      email: true,
+      name: true,
+    },
+  });
+
   return NextResponse.json(fullUser);
 }
