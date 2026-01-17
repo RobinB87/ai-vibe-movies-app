@@ -15,8 +15,14 @@ export async function GET(_: Request, { params }: { params: Promise<{ id: string
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const movie = await prisma.movie.findUnique({
-    where: { id: movieId, createdByUserId: userId },
+  // Only return the movie if the user has a preference for it
+  const movie = await prisma.movie.findFirst({
+    where: {
+      id: movieId,
+      userMoviePreferences: {
+        some: { userId },
+      },
+    },
     include: {
       userMoviePreferences: {
         where: { userId },
@@ -46,66 +52,64 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
     return NextResponse.json({ error: "Invalid movie ID" }, { status: 400 });
   }
 
+  const session = await getUserFromSession();
+  const userId = session?.id ? +session.id : null;
+
+  if (!userId) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
   const body = await request.json();
-  const dataToUpdate: { [key: string]: any } = {};
 
-  // TODO: fix, this can be less ugly
-  if ("name" in body) {
-    dataToUpdate.name = body.name;
-  }
-  if ("year" in body) {
-    dataToUpdate.year = body.year;
-  }
-  if ("genre" in body) {
-    dataToUpdate.genre = body.genre;
-  }
-  if ("isOnWatchlist" in body) {
-    dataToUpdate.isOnWatchlist = body.isOnWatchlist;
-  }
-  if ("rating" in body) {
-    dataToUpdate.rating = body.rating;
-  }
-  if ("review" in body) {
-    dataToUpdate.review = body.review;
-  }
-
+  // Only allow updating preferences, not movie metadata
   const hasPreferenceData = "rating" in body || "review" in body || "isOnWatchlist" in body;
-  const userId = body.createdByUserId ? +body.createdByUserId : null;
+
+  if (!hasPreferenceData) {
+    return NextResponse.json({ error: "No preference data provided" }, { status: 400 });
+  }
 
   try {
-    const result = await prisma.$transaction(async (tx) => {
-      const updatedMovie = await tx.movie.update({
-        where: { id: movieId },
-        data: dataToUpdate,
-      });
-
-      if (hasPreferenceData && userId) {
-        const preferenceData: { rating?: number | null; review?: string | null; isOnWatchlist?: boolean } = {};
-        if ("rating" in body) preferenceData.rating = body.rating;
-        if ("review" in body) preferenceData.review = body.review;
-        if ("isOnWatchlist" in body) preferenceData.isOnWatchlist = body.isOnWatchlist;
-
-        await tx.userMoviePreference.upsert({
-          where: {
-            userId_movieId: { userId, movieId },
-          },
-          update: preferenceData,
-          create: {
-            userId,
-            movieId,
-            rating: body.rating ?? null,
-            review: body.review ?? null,
-            isOnWatchlist: body.isOnWatchlist ?? false,
-          },
-        });
-      }
-
-      return updatedMovie;
+    // Verify the user has a preference for this movie
+    const existingPreference = await prisma.userMoviePreference.findUnique({
+      where: { userId_movieId: { userId, movieId } },
     });
 
-    return NextResponse.json(result);
+    if (!existingPreference) {
+      return NextResponse.json({ error: "Movie not found" }, { status: 404 });
+    }
+
+    const preferenceData: { rating?: number | null; review?: string | null; isOnWatchlist?: boolean } = {};
+    if ("rating" in body) preferenceData.rating = body.rating;
+    if ("review" in body) preferenceData.review = body.review;
+    if ("isOnWatchlist" in body) preferenceData.isOnWatchlist = body.isOnWatchlist;
+
+    await prisma.userMoviePreference.update({
+      where: { userId_movieId: { userId, movieId } },
+      data: preferenceData,
+    });
+
+    // Fetch and return the movie with updated preferences
+    const movie = await prisma.movie.findUnique({
+      where: { id: movieId },
+      include: {
+        userMoviePreferences: {
+          where: { userId },
+          select: { rating: true, review: true, isOnWatchlist: true },
+        },
+      },
+    });
+
+    const { userMoviePreferences, ...movieData } = movie as any;
+    const preference = userMoviePreferences?.[0];
+
+    return NextResponse.json({
+      ...movieData,
+      rating: preference?.rating ?? null,
+      review: preference?.review ?? null,
+      isOnWatchlist: preference?.isOnWatchlist ?? false,
+    });
   } catch (error) {
-    return NextResponse.json({ error: "Movie not found or update failed" }, { status: 404 });
+    return NextResponse.json({ error: "Update failed" }, { status: 500 });
   }
 }
 
@@ -116,13 +120,21 @@ export async function DELETE(_: Request, { params }: { params: Promise<{ id: str
     return NextResponse.json({ error: "Invalid movie ID" }, { status: 400 });
   }
 
+  const session = await getUserFromSession();
+  const userId = session?.id ? +session.id : null;
+
+  if (!userId) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
   try {
-    await prisma.movie.delete({
-      where: { id: movieId },
+    // Only delete the user's preference, not the movie itself
+    await prisma.userMoviePreference.delete({
+      where: { userId_movieId: { userId, movieId } },
     });
 
-    return NextResponse.json({ message: "Movie deleted" }, { status: 204 });
+    return NextResponse.json({ message: "Movie removed from collection" }, { status: 200 });
   } catch (error) {
-    return NextResponse.json({ error: "Movie not found or deletion failed" }, { status: 404 });
+    return NextResponse.json({ error: "Movie not found in your collection" }, { status: 404 });
   }
 }

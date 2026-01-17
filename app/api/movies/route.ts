@@ -14,8 +14,11 @@ export async function GET(request: Request) {
     return NextResponse.json([]);
   }
 
+  // Only return movies where the current user has a preference
   const whereClause: any = {
-    createdByUserId: userId,
+    userMoviePreferences: {
+      some: { userId },
+    },
   };
 
   if (searchTerm) {
@@ -64,35 +67,45 @@ export async function POST(request: Request) {
   if (!createdByUserId) return NextResponse.json({ error: "Created By User ID is required" }, { status: 400 });
 
   const userId = +createdByUserId;
-  const hasPreferenceData = rating !== undefined || review !== undefined || isOnWatchlist !== undefined;
 
   const result = await prisma.$transaction(async (tx) => {
-    const newMovie = await tx.movie.create({
-      data: {
+    // Find or create the movie (unique by name + year)
+    const movie = await tx.movie.upsert({
+      where: { name_year: { name, year } },
+      update: {}, // Don't update existing movie data
+      create: {
         name,
         year,
         genre,
-        rating,
-        review,
-        isOnWatchlist,
         createdByUserId: userId,
       },
     });
 
-    if (hasPreferenceData) {
-      await tx.userMoviePreference.create({
-        data: {
-          userId,
-          movieId: newMovie.id,
-          rating: rating ?? null,
-          review: review ?? null,
-          isOnWatchlist: isOnWatchlist ?? false,
-        },
-      });
-    }
+    // Create or update the user's preference for this movie
+    await tx.userMoviePreference.upsert({
+      where: { userId_movieId: { userId, movieId: movie.id } },
+      update: {
+        rating: rating ?? null,
+        review: review ?? null,
+        isOnWatchlist: isOnWatchlist ?? false,
+      },
+      create: {
+        userId,
+        movieId: movie.id,
+        rating: rating ?? null,
+        review: review ?? null,
+        isOnWatchlist: isOnWatchlist ?? false,
+      },
+    });
 
-    return newMovie;
+    return movie;
   });
 
-  return NextResponse.json(result, { status: 201 });
+  // Return the movie with the user's preferences
+  return NextResponse.json({
+    ...result,
+    rating: rating ?? null,
+    review: review ?? null,
+    isOnWatchlist: isOnWatchlist ?? false,
+  }, { status: 201 });
 }

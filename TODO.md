@@ -1,10 +1,7 @@
 # Todo list. Do not start working on this until I add it to the requirements.
 
 Add login button and change text to see default movies, or log in
-Endpoints need to have authorization, eg:
-In GET, only get movies for user.
-In POST: get user from session?
-Format, update prettier
+Search when adding a new movie?
 
 Add user type to DB + only admins can edit movies
 
