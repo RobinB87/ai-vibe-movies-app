@@ -49,9 +49,9 @@ const MoviesPage = () => {
       <div className="flex items-center gap-4 mb-6">
         <h1 className="text-3xl font-bold flex-1">Movies {user?.id}</h1>
         {/* TODO: {currentUser?.name && `for ${currentUser?.name}`} */}
-        <Link href="/movies/new" className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
+        { user && <Link href="/movies/new" className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
           Add New Movie
-        </Link>
+        </Link>}
         {user ? (
           <LogOutButton />
         ) : (
@@ -68,6 +68,7 @@ const MoviesPage = () => {
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
         />
+        {user && 
         <button
           onClick={() => setShowWatchlistOnly(!showWatchlistOnly)}
           className={`px-4 py-2 rounded ${
@@ -75,7 +76,7 @@ const MoviesPage = () => {
           } hover:bg-indigo-700 hover:text-white transition-colors duration-200`}
         >
           {showWatchlistOnly ? "Show All Movies" : "Show Watchlist"}
-        </button>
+        </button>}
       </div>
       {loading ? (
         <div className="p-8">Loading movies...</div>
