@@ -47,11 +47,12 @@ const MoviesPage = () => {
   return (
     <div className="container mx-auto p-8">
       <div className="flex items-center gap-4 mb-6">
-        <h1 className="text-3xl font-bold flex-1">Movies {user?.id}</h1>
-        {/* TODO: {currentUser?.name && `for ${currentUser?.name}`} */}
-        { user && <Link href="/movies/new" className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
-          Add New Movie
-        </Link>}
+        <h1 className="text-3xl font-bold flex-1">Movies {user && `for ${user.name}`}</h1>
+        {user && (
+          <Link href="/movies/new" className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
+            Add New Movie
+          </Link>
+        )}
         {user ? (
           <LogOutButton />
         ) : (
@@ -68,15 +69,16 @@ const MoviesPage = () => {
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
         />
-        {user && 
-        <button
-          onClick={() => setShowWatchlistOnly(!showWatchlistOnly)}
-          className={`px-4 py-2 rounded ${
-            showWatchlistOnly ? "bg-indigo-600 text-white" : "bg-gray-200 text-gray-800"
-          } hover:bg-indigo-700 hover:text-white transition-colors duration-200`}
-        >
-          {showWatchlistOnly ? "Show All Movies" : "Show Watchlist"}
-        </button>}
+        {user && (
+          <button
+            onClick={() => setShowWatchlistOnly(!showWatchlistOnly)}
+            className={`px-4 py-2 rounded ${
+              showWatchlistOnly ? "bg-indigo-600 text-white" : "bg-gray-200 text-gray-800"
+            } hover:bg-indigo-700 hover:text-white transition-colors duration-200`}
+          >
+            {showWatchlistOnly ? "Show All Movies" : "Show Watchlist"}
+          </button>
+        )}
       </div>
       {loading ? (
         <div className="p-8">Loading movies...</div>
