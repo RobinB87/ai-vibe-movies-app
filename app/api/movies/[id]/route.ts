@@ -1,9 +1,8 @@
 import prisma from "@/lib/prisma";
 import { NextResponse } from "next/server";
 
-export async function GET(_: Request, { params }: { params: { id: string | Promise<string> } }) {
-  const resolvedParams = typeof params === "string" ? { id: params } : await Promise.resolve(params);
-  const { id } = resolvedParams;
+export async function GET(_: Request, { params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params;
 
   const movieId = parseInt(String(id), 10);
   if (isNaN(movieId)) return NextResponse.json({ error: "Invalid movie ID" }, { status: 400 });
@@ -14,9 +13,8 @@ export async function GET(_: Request, { params }: { params: { id: string | Promi
   return NextResponse.json(movie);
 }
 
-export async function PUT(request: Request, { params }: { params: { id: string | Promise<string> } }) {
-  const resolvedParams = typeof params === "string" ? { id: params } : await Promise.resolve(params);
-  const { id } = resolvedParams;
+export async function PUT(request: Request, { params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params;
   const movieId = parseInt(String(id), 10);
   if (isNaN(movieId)) {
     return NextResponse.json({ error: "Invalid movie ID" }, { status: 400 });
@@ -45,21 +43,48 @@ export async function PUT(request: Request, { params }: { params: { id: string |
     dataToUpdate.review = body.review;
   }
 
+  const hasPreferenceData = "rating" in body || "review" in body || "isOnWatchlist" in body;
+  const userId = body.createdByUserId ? +body.createdByUserId : null;
+
   try {
-    const updatedMovie = await prisma.movie.update({
-      where: { id: movieId },
-      data: dataToUpdate,
+    const result = await prisma.$transaction(async (tx) => {
+      const updatedMovie = await tx.movie.update({
+        where: { id: movieId },
+        data: dataToUpdate,
+      });
+
+      if (hasPreferenceData && userId) {
+        const preferenceData: { rating?: number | null; review?: string | null; isOnWatchlist?: boolean } = {};
+        if ("rating" in body) preferenceData.rating = body.rating;
+        if ("review" in body) preferenceData.review = body.review;
+        if ("isOnWatchlist" in body) preferenceData.isOnWatchlist = body.isOnWatchlist;
+
+        await tx.userMoviePreference.upsert({
+          where: {
+            userId_movieId: { userId, movieId },
+          },
+          update: preferenceData,
+          create: {
+            userId,
+            movieId,
+            rating: body.rating ?? null,
+            review: body.review ?? null,
+            isOnWatchlist: body.isOnWatchlist ?? false,
+          },
+        });
+      }
+
+      return updatedMovie;
     });
 
-    return NextResponse.json(updatedMovie);
+    return NextResponse.json(result);
   } catch (error) {
     return NextResponse.json({ error: "Movie not found or update failed" }, { status: 404 });
   }
 }
 
-export async function DELETE(_: Request, { params }: { params: { id: string | Promise<string> } }) {
-  const resolvedParams = typeof params === "string" ? { id: params } : await Promise.resolve(params);
-  const { id } = resolvedParams;
+export async function DELETE(_: Request, { params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params;
   const movieId = parseInt(String(id), 10);
   if (isNaN(movieId)) {
     return NextResponse.json({ error: "Invalid movie ID" }, { status: 400 });

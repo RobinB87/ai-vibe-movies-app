@@ -58,8 +58,12 @@ const MovieForm: React.FC<MovieFormProps> = ({ initialMovie }) => {
     const method = movie.id ? "PUT" : "POST";
 
     try {
-      // Filter out undefined values from the movie object before sending
-      const movieToSubmit = Object.fromEntries(Object.entries(movie).filter(([, val]) => val !== undefined));
+      // Filter out undefined values, but convert undefined rating/review to null when editing
+      // so the backend knows to clear these fields
+      const movieToSubmit = Object.fromEntries(
+        Object.entries(movie).filter(([key, val]) => val !== undefined || (movie.id && (key === "rating" || key === "review")))
+          .map(([key, val]) => [key, val === undefined ? null : val])
+      );
       movieToSubmit.createdByUserId = user?.id;
 
       const res = await fetch(url, {
