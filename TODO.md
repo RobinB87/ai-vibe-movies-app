@@ -1,6 +1,8 @@
 # Todo list. Do not start working on this until I add it to the requirements.
 
-Only admins can edit movies
+Add login button and change text to see default movies, or log in
+
+Add user to DB + only admins can edit movies
 Set up proper authentication
 Salt and hash the password
 Endpoints need to have authorization

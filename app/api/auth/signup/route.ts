@@ -1,6 +1,7 @@
 import prisma from "@/lib/prisma";
 import { NextResponse } from "next/server";
 import { generateSalt, hashPassword } from "../core/passwordHasher";
+import { createUserSession } from "../core/session";
 
 export async function POST(request: Request) {
   try {
@@ -22,6 +23,8 @@ export async function POST(request: Request) {
         salt,
       },
     });
+
+    await createUserSession({ id: newUser.id.toString(), role: "user" });
 
     const { password: userPassword, ...userWithoutPassword } = newUser;
 

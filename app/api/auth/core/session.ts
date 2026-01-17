@@ -1,3 +1,5 @@
+import 'server-only'
+
 import { Role } from "@/types/role";
 import crypto from "crypto";
 import redis from "@/lib/redis";
