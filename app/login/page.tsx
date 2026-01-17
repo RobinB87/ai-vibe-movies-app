@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
+import { useMovies } from '../context/MovieContext';
 
 const LoginPage: React.FC = () => {
   const router = useRouter();
@@ -10,6 +11,7 @@ const LoginPage: React.FC = () => {
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const { setUser } = useMovies();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -17,6 +19,7 @@ const LoginPage: React.FC = () => {
     setError(null);
 
     try {
+      // TODO: Move to actions
       const res = await fetch('/api/auth/login', {
         method: 'POST',
         headers: {
@@ -30,7 +33,9 @@ const LoginPage: React.FC = () => {
         throw new Error(errorData.error || `HTTP error! status: ${res.status}`);
       }
 
-      const userData = await res.json();
+      const user = await res.json();
+      setUser(user);
+
       router.push('/movies');
     } catch (e: any) {
       setError(e.message);
