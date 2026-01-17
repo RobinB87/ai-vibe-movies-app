@@ -1,6 +1,12 @@
 "use client";
 
-import React, { createContext, useState, useContext, useEffect, useCallback, ReactNode } from "react";
+import React, {
+  createContext,
+  useState,
+  useContext,
+  useEffect,
+  ReactNode,
+} from "react";
 import { Movie } from "@/types/movie";
 import { User } from "@/types/user";
 
@@ -10,7 +16,7 @@ interface MovieContextType {
 
   movies: Movie[];
   setMovies: (movies: Movie[]) => void;
- 
+
   addMovie: (movie: Movie) => void;
   updateMovie: (movie: Movie) => void;
   removeMovie: (id: number) => void;
@@ -18,7 +24,9 @@ interface MovieContextType {
 
 const MovieContext = createContext<MovieContextType | undefined>(undefined);
 
-export const MovieProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
+export const MovieProvider: React.FC<{ children: ReactNode }> = ({
+  children,
+}) => {
   const [user, setUser] = useState<User | null>(null);
   const [movies, setMovies] = useState<Movie[]>([]);
 
@@ -28,19 +36,21 @@ export const MovieProvider: React.FC<{ children: ReactNode }> = ({ children }) =
       if (res.ok) {
         const currentUser = await res.json();
         setUser(currentUser);
-  }}
-fetchCurrentUser();
-}, [
-
-  ]);
-
+      }
+    };
+    fetchCurrentUser();
+  }, []);
 
   const addMovie = (newMovie: Movie) => {
     setMovies((prevMovies) => [...prevMovies, newMovie]);
   };
 
   const updateMovie = (updatedMovie: Movie) => {
-    setMovies((prevMovies) => prevMovies.map((movie) => (movie.id === updatedMovie.id ? updatedMovie : movie)));
+    setMovies((prevMovies) =>
+      prevMovies.map((movie) =>
+        movie.id === updatedMovie.id ? updatedMovie : movie,
+      ),
+    );
   };
 
   const removeMovie = (id: number) => {
@@ -50,7 +60,7 @@ fetchCurrentUser();
   const value = {
     user,
     setUser,
-    
+
     movies,
     setMovies,
 
@@ -59,7 +69,9 @@ fetchCurrentUser();
     removeMovie,
   };
 
-  return <MovieContext.Provider value={value}>{children}</MovieContext.Provider>;
+  return (
+    <MovieContext.Provider value={value}>{children}</MovieContext.Provider>
+  );
 };
 
 export const useMovies = () => {
