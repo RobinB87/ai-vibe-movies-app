@@ -1,4 +1,14 @@
 services:
+  postgres:
+    image: postgres:14
+    ports:
+      - "5433:5432"
+    environment:
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: movies-app
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
   redis:
     image: redis:latest
     ports:
@@ -8,4 +18,5 @@ services:
     command: redis-server --appendonly yes
 
 volumes:
+  postgres-data:
   redis-data:
