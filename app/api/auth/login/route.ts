@@ -15,9 +15,9 @@ export async function POST(request: Request) {
 
     if (!user) return NextResponse.json({ error: "Unable to login" }, { status: 401 });
 
-    const isCorrectPassword = await comparePasswords({hashedPassword: user.password, password, salt: user.salt});
+    const isCorrectPassword = await comparePasswords({ hashedPassword: user.password, password, salt: user.salt });
     if (!isCorrectPassword) return NextResponse.json({ error: "Unable to login" }, { status: 401 });
-    
+
     await createUserSession({ id: user.id.toString(), role: "user" });
     const { password: userPassword, salt: userSalt, ...userWithoutPassword } = user;
 

@@ -1,9 +1,9 @@
-'use client';
+"use client";
 
-import { useEffect, useState } from 'react';
-import { useParams } from 'next/navigation';
-import MovieForm from '../../../../components/MovieForm';
-import { Movie } from '@/types/movie';
+import { useEffect, useState } from "react";
+import { useParams } from "next/navigation";
+import MovieForm from "../../../../components/MovieForm";
+import { Movie } from "@/types/movie";
 
 const EditMoviePage = () => {
   const params = useParams();

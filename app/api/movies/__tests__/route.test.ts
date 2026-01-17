@@ -1,8 +1,8 @@
-import { GET, POST } from '../route';
-import prisma from '@/lib/prisma';
+import { GET, POST } from "../route";
+import prisma from "@/lib/prisma";
 
 // Mock the prisma instance
-jest.mock('@/lib/prisma', () => ({
+jest.mock("@/lib/prisma", () => ({
   __esModule: true,
   default: {
     movie: {
@@ -12,22 +12,22 @@ jest.mock('@/lib/prisma', () => ({
   },
 }));
 
-describe('Movies API', () => {
+describe("Movies API", () => {
   beforeEach(() => {
     // Reset mocks before each test
     jest.clearAllMocks();
   });
 
-  describe('GET /api/movies', () => {
-    it('should return all movies', async () => {
+  describe("GET /api/movies", () => {
+    it("should return all movies", async () => {
       const mockMovies = [
-        { id: 1, name: 'Movie 1', year: 2020, genre: 'Action', rating: 5, review: 'Great' },
-        { id: 2, name: 'Movie 2', year: 2021, genre: 'Comedy', rating: 4, review: 'Funny' },
+        { id: 1, name: "Movie 1", year: 2020, genre: "Action", rating: 5, review: "Great" },
+        { id: 2, name: "Movie 2", year: 2021, genre: "Comedy", rating: 4, review: "Funny" },
       ];
       (prisma.movie.findMany as jest.Mock).mockResolvedValue(mockMovies);
 
       // Pass a mock Request object
-      const request = new Request('http://localhost:3000/api/movies');
+      const request = new Request("http://localhost:3000/api/movies");
       const response = await GET(request);
       const data = await response.json();
 
@@ -37,13 +37,11 @@ describe('Movies API', () => {
       expect(prisma.movie.findMany).toHaveBeenCalledWith({ where: undefined });
     });
 
-    it('should return movies matching the search term in name', async () => {
-      const mockMovies = [
-        { id: 1, name: 'Movie A', year: 2020, genre: 'Action', rating: 5, review: 'Great' },
-      ];
+    it("should return movies matching the search term in name", async () => {
+      const mockMovies = [{ id: 1, name: "Movie A", year: 2020, genre: "Action", rating: 5, review: "Great" }];
       (prisma.movie.findMany as jest.Mock).mockResolvedValue(mockMovies);
 
-      const request = new Request('http://localhost:3000/api/movies?search=Movie A');
+      const request = new Request("http://localhost:3000/api/movies?search=Movie A");
       const response = await GET(request);
       const data = await response.json();
 
@@ -52,21 +50,19 @@ describe('Movies API', () => {
       expect(prisma.movie.findMany).toHaveBeenCalledWith({
         where: {
           OR: [
-            { name: { contains: 'Movie A', mode: 'insensitive' } },
-            { genre: { contains: 'Movie A', mode: 'insensitive' } },
-            { review: { contains: 'Movie A', mode: 'insensitive' } },
+            { name: { contains: "Movie A", mode: "insensitive" } },
+            { genre: { contains: "Movie A", mode: "insensitive" } },
+            { review: { contains: "Movie A", mode: "insensitive" } },
           ],
         },
       });
     });
 
-    it('should return movies matching the search term in genre', async () => {
-      const mockMovies = [
-        { id: 2, name: 'Film B', year: 2021, genre: 'Comedy', rating: 4, review: 'Funny' },
-      ];
+    it("should return movies matching the search term in genre", async () => {
+      const mockMovies = [{ id: 2, name: "Film B", year: 2021, genre: "Comedy", rating: 4, review: "Funny" }];
       (prisma.movie.findMany as jest.Mock).mockResolvedValue(mockMovies);
 
-      const request = new Request('http://localhost:3000/api/movies?search=Comedy');
+      const request = new Request("http://localhost:3000/api/movies?search=Comedy");
       const response = await GET(request);
       const data = await response.json();
 
@@ -75,21 +71,19 @@ describe('Movies API', () => {
       expect(prisma.movie.findMany).toHaveBeenCalledWith({
         where: {
           OR: [
-            { name: { contains: 'Comedy', mode: 'insensitive' } },
-            { genre: { contains: 'Comedy', mode: 'insensitive' } },
-            { review: { contains: 'Comedy', mode: 'insensitive' } },
+            { name: { contains: "Comedy", mode: "insensitive" } },
+            { genre: { contains: "Comedy", mode: "insensitive" } },
+            { review: { contains: "Comedy", mode: "insensitive" } },
           ],
         },
       });
     });
 
-    it('should return movies matching the search term in review', async () => {
-      const mockMovies = [
-        { id: 3, name: 'Movie C', year: 2022, genre: 'Thriller', rating: 3, review: 'Intense plot' },
-      ];
+    it("should return movies matching the search term in review", async () => {
+      const mockMovies = [{ id: 3, name: "Movie C", year: 2022, genre: "Thriller", rating: 3, review: "Intense plot" }];
       (prisma.movie.findMany as jest.Mock).mockResolvedValue(mockMovies);
 
-      const request = new Request('http://localhost:3000/api/movies?search=Intense');
+      const request = new Request("http://localhost:3000/api/movies?search=Intense");
       const response = await GET(request);
       const data = await response.json();
 
@@ -98,18 +92,18 @@ describe('Movies API', () => {
       expect(prisma.movie.findMany).toHaveBeenCalledWith({
         where: {
           OR: [
-            { name: { contains: 'Intense', mode: 'insensitive' } },
-            { genre: { contains: 'Intense', mode: 'insensitive' } },
-            { review: { contains: 'Intense', mode: 'insensitive' } },
+            { name: { contains: "Intense", mode: "insensitive" } },
+            { genre: { contains: "Intense", mode: "insensitive" } },
+            { review: { contains: "Intense", mode: "insensitive" } },
           ],
         },
       });
     });
 
-    it('should return an empty array if no movies match the search term', async () => {
+    it("should return an empty array if no movies match the search term", async () => {
       (prisma.movie.findMany as jest.Mock).mockResolvedValue([]);
 
-      const request = new Request('http://localhost:3000/api/movies?search=NonExistent');
+      const request = new Request("http://localhost:3000/api/movies?search=NonExistent");
       const response = await GET(request);
       const data = await response.json();
 
@@ -118,22 +112,38 @@ describe('Movies API', () => {
       expect(prisma.movie.findMany).toHaveBeenCalledWith({
         where: {
           OR: [
-            { name: { contains: 'NonExistent', mode: 'insensitive' } },
-            { genre: { contains: 'NonExistent', mode: 'insensitive' } },
-            { review: { contains: 'NonExistent', mode: 'insensitive' } },
+            { name: { contains: "NonExistent", mode: "insensitive" } },
+            { genre: { contains: "NonExistent", mode: "insensitive" } },
+            { review: { contains: "NonExistent", mode: "insensitive" } },
           ],
         },
       });
     });
 
-    it('should return only movies on the watchlist if watchlist=true', async () => {
+    it("should return only movies on the watchlist if watchlist=true", async () => {
       const mockMovies = [
-        { id: 1, name: 'Watchlist Movie 1', year: 2020, genre: 'Action', rating: 5, review: 'Great', isOnWatchlist: true },
-        { id: 3, name: 'Watchlist Movie 2', year: 2022, genre: 'Thriller', rating: 3, review: 'Intense plot', isOnWatchlist: true },
+        {
+          id: 1,
+          name: "Watchlist Movie 1",
+          year: 2020,
+          genre: "Action",
+          rating: 5,
+          review: "Great",
+          isOnWatchlist: true,
+        },
+        {
+          id: 3,
+          name: "Watchlist Movie 2",
+          year: 2022,
+          genre: "Thriller",
+          rating: 3,
+          review: "Intense plot",
+          isOnWatchlist: true,
+        },
       ];
       (prisma.movie.findMany as jest.Mock).mockResolvedValue(mockMovies);
 
-      const request = new Request('http://localhost:3000/api/movies?watchlist=true');
+      const request = new Request("http://localhost:3000/api/movies?watchlist=true");
       const response = await GET(request);
       const data = await response.json();
 
@@ -146,13 +156,21 @@ describe('Movies API', () => {
       });
     });
 
-    it('should return movies matching search term and on watchlist if both are provided', async () => {
+    it("should return movies matching search term and on watchlist if both are provided", async () => {
       const mockMovies = [
-        { id: 1, name: 'Watchlist Action Movie', year: 2020, genre: 'Action', rating: 5, review: 'Great', isOnWatchlist: true },
+        {
+          id: 1,
+          name: "Watchlist Action Movie",
+          year: 2020,
+          genre: "Action",
+          rating: 5,
+          review: "Great",
+          isOnWatchlist: true,
+        },
       ];
       (prisma.movie.findMany as jest.Mock).mockResolvedValue(mockMovies);
 
-      const request = new Request('http://localhost:3000/api/movies?search=Action&watchlist=true');
+      const request = new Request("http://localhost:3000/api/movies?search=Action&watchlist=true");
       const response = await GET(request);
       const data = await response.json();
 
@@ -161,9 +179,9 @@ describe('Movies API', () => {
       expect(prisma.movie.findMany).toHaveBeenCalledWith({
         where: {
           OR: [
-            { name: { contains: 'Action', mode: 'insensitive' } },
-            { genre: { contains: 'Action', mode: 'insensitive' } },
-            { review: { contains: 'Action', mode: 'insensitive' } },
+            { name: { contains: "Action", mode: "insensitive" } },
+            { genre: { contains: "Action", mode: "insensitive" } },
+            { review: { contains: "Action", mode: "insensitive" } },
           ],
           isOnWatchlist: true,
         },
@@ -171,9 +189,17 @@ describe('Movies API', () => {
     });
   });
 
-  describe('POST /api/movies', () => {
-    it('should create a new movie with isOnWatchlist property', async () => {
-      const newMovieData = { name: 'Watchlist Movie', year: 2024, genre: 'Sci-Fi', rating: 4.5, review: 'Intriguing', isOnWatchlist: true, createdByUserId: 1 };
+  describe("POST /api/movies", () => {
+    it("should create a new movie with isOnWatchlist property", async () => {
+      const newMovieData = {
+        name: "Watchlist Movie",
+        year: 2024,
+        genre: "Sci-Fi",
+        rating: 4.5,
+        review: "Intriguing",
+        isOnWatchlist: true,
+        createdByUserId: 1,
+      };
       const createdMovie = { id: 4, ...newMovieData };
       (prisma.movie.create as jest.Mock).mockResolvedValue(createdMovie);
 
@@ -190,8 +216,15 @@ describe('Movies API', () => {
       expect(prisma.movie.create).toHaveBeenCalledTimes(1);
     });
 
-    it('should create a new movie without isOnWatchlist property', async () => {
-      const newMovieData = { name: 'New Movie', year: 2023, genre: 'Drama', rating: 3, review: 'Good', createdByUserId: 1 };
+    it("should create a new movie without isOnWatchlist property", async () => {
+      const newMovieData = {
+        name: "New Movie",
+        year: 2023,
+        genre: "Drama",
+        rating: 3,
+        review: "Good",
+        createdByUserId: 1,
+      };
       const createdMovie = { id: 3, ...newMovieData, isOnWatchlist: null }; // Prisma returns null for undefined optional fields
       (prisma.movie.create as jest.Mock).mockResolvedValue(createdMovie);
 
@@ -208,8 +241,14 @@ describe('Movies API', () => {
       expect(prisma.movie.create).toHaveBeenCalledTimes(1);
     });
 
-    it('should create a new movie without rating and review properties', async () => {
-      const newMovieData = { name: 'Movie without Rating/Review', year: 2023, genre: 'Fantasy', isOnWatchlist: false, createdByUserId: 1 };
+    it("should create a new movie without rating and review properties", async () => {
+      const newMovieData = {
+        name: "Movie without Rating/Review",
+        year: 2023,
+        genre: "Fantasy",
+        isOnWatchlist: false,
+        createdByUserId: 1,
+      };
       const createdMovie = { id: 5, ...newMovieData, rating: null, review: null }; // Prisma returns null for optional fields not provided
       (prisma.movie.create as jest.Mock).mockResolvedValue(createdMovie);
 

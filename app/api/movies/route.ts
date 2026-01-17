@@ -1,22 +1,22 @@
-import prisma from '@/lib/prisma';
-import { NextResponse } from 'next/server';
+import prisma from "@/lib/prisma";
+import { NextResponse } from "next/server";
 
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
-  const searchTerm = searchParams.get('search');
-  const showWatchlist = searchParams.get('watchlist');
+  const searchTerm = searchParams.get("search");
+  const showWatchlist = searchParams.get("watchlist");
 
   const whereClause: any = {};
 
   if (searchTerm) {
     whereClause.OR = [
-      { name: { contains: searchTerm, mode: 'insensitive' } },
-      { genre: { contains: searchTerm, mode: 'insensitive' } },
-      { review: { contains: searchTerm, mode: 'insensitive' } },
+      { name: { contains: searchTerm, mode: "insensitive" } },
+      { genre: { contains: searchTerm, mode: "insensitive" } },
+      { review: { contains: searchTerm, mode: "insensitive" } },
     ];
   }
 
-  if (showWatchlist === 'true') {
+  if (showWatchlist === "true") {
     whereClause.isOnWatchlist = true;
   }
 
@@ -29,7 +29,7 @@ export async function GET(request: Request) {
 
 export async function POST(request: Request) {
   const { name, year, genre, rating, review, isOnWatchlist, createdByUserId } = await request.json();
-  if (!createdByUserId) return NextResponse.json({ error: 'Created By User ID is required' }, { status: 400 });
+  if (!createdByUserId) return NextResponse.json({ error: "Created By User ID is required" }, { status: 400 });
 
   const newMovie = await prisma.movie.create({
     data: {

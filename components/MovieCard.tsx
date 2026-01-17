@@ -1,4 +1,4 @@
-import Link from 'next/link';
+import Link from "next/link";
 
 import { Movie } from "@/types/movie";
 
@@ -16,9 +16,19 @@ const MovieCard: React.FC<MovieCardProps> = ({ movie }) => {
             <span className="ml-2 text-xs bg-blue-500 text-white px-2 py-1 rounded-full">Watchlist</span>
           )}
         </h2>
-        <p><strong>Genre:</strong> {movie.genre}</p>
-        {movie.rating !== undefined && movie.rating !== null && <p><strong>Rating:</strong> {movie.rating}/10</p>}
-        {movie.review && <p><strong>Review:</strong> {movie.review}</p>}
+        <p>
+          <strong>Genre:</strong> {movie.genre}
+        </p>
+        {movie.rating !== undefined && movie.rating !== null && (
+          <p>
+            <strong>Rating:</strong> {movie.rating}/10
+          </p>
+        )}
+        {movie.review && (
+          <p>
+            <strong>Review:</strong> {movie.review}
+          </p>
+        )}
       </div>
     </Link>
   );

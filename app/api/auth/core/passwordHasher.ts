@@ -13,7 +13,15 @@ export function generateSalt(): string {
   return crypto.randomBytes(16).toString("hex").normalize();
 }
 
-export async function comparePasswords({password, salt, hashedPassword}: {password:string, salt:string, hashedPassword:string}) {
+export async function comparePasswords({
+  password,
+  salt,
+  hashedPassword,
+}: {
+  password: string;
+  salt: string;
+  hashedPassword: string;
+}) {
   const inputHashedPassword = await hashPassword(password, salt);
   return crypto.timingSafeEqual(Buffer.from(inputHashedPassword, "hex"), Buffer.from(hashedPassword, "hex"));
 }

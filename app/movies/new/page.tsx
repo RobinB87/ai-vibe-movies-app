@@ -1,5 +1,5 @@
 // movies-app/app/movies/new/page.tsx
-import MovieForm from '../../../components/MovieForm';
+import MovieForm from "../../../components/MovieForm";
 
 const NewMoviePage = () => {
   return (

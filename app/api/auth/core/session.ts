@@ -1,4 +1,4 @@
-import 'server-only'
+import "server-only";
 
 import { Role } from "@/types/role";
 import crypto from "crypto";

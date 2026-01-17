@@ -1,4 +1,4 @@
-import Redis from 'ioredis';
+import Redis from "ioredis";
 
 const redis = new Redis({
   port: process.env.REDIS_PORT ? parseInt(process.env.REDIS_PORT) : 6379,
@@ -7,7 +7,7 @@ const redis = new Redis({
   // db: 0,
 });
 
-redis.on('connect', () => console.log('Connected to Redis!'));
-redis.on('error', (err) => console.error('Redis Client Error', err));
+redis.on("connect", () => console.log("Connected to Redis!"));
+redis.on("error", (err) => console.error("Redis Client Error", err));
 
 export default redis;
