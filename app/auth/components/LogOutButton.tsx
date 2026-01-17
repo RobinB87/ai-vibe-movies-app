@@ -1,21 +1,14 @@
 import { useMovies } from "@/app/context/MovieContext";
 import { logOut } from "../actions";
+import Button from "@/components/Button";
 
 export function LogOutButton() {
   const { setUser } = useMovies();
 
-  const logOutClick = async () => {
+  const handleLogOut = async () => {
     setUser(null);
     await logOut();
   };
 
-  return (
-    <button
-      type="submit"
-      className="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded"
-      onClick={async () => logOutClick()}
-    >
-      Log Out
-    </button>
-  );
+  return <Button label="Log Out" color="red" onClick={handleLogOut} />;
 }

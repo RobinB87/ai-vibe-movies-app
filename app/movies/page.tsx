@@ -1,11 +1,11 @@
 "use client";
 
-import Link from "next/link";
 import MovieCard from "../../components/MovieCard";
 import { useMovies } from "@/app/context/MovieContext";
 import { LogOutButton } from "../auth/components/LogOutButton";
 import { useEffect, useState } from "react";
 import useDebounce from "@/lib/hooks/useDebounce";
+import LinkButton from "@/components/LinkButton";
 
 const MoviesPage = () => {
   const { user, movies, setMovies } = useMovies();
@@ -48,18 +48,8 @@ const MoviesPage = () => {
     <div className="container mx-auto p-8">
       <div className="flex items-center gap-4 mb-6">
         <h1 className="text-3xl font-bold flex-1">Movies {user && `for ${user.name}`}</h1>
-        {user && (
-          <Link href="/movies/new" className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
-            Add New Movie
-          </Link>
-        )}
-        {user ? (
-          <LogOutButton />
-        ) : (
-          <button>
-            <Link href="/auth/login">Login</Link>
-          </button>
-        )}
+        {user && <LinkButton href="/movies/new" label="Add New Movie" />}
+        {user ? <LogOutButton /> : <LinkButton href="/auth/login" label="Login" />}
       </div>
       <div className="mb-6 flex gap-4">
         <input
