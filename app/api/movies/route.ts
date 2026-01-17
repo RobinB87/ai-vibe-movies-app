@@ -39,7 +39,7 @@ export async function POST(request: Request) {
       rating,
       review,
       isOnWatchlist,
-      createdByUserId,
+      createdByUserId: +createdByUserId,
     },
   });
   return NextResponse.json(newMovie, { status: 201 });

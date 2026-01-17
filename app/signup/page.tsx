@@ -20,6 +20,7 @@ const SignupPage: React.FC = () => {
     setSuccess(null);
 
     try {
+      // TODO: Move to actions
       const res = await fetch('/api/auth/signup', {
         method: 'POST',
         headers: {
