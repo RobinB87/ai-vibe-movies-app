@@ -4,21 +4,56 @@ import Link from "next/link";
 import MovieCard from "../../components/MovieCard";
 import { useMovies } from "@/app/context/MovieContext";
 import { LogOutButton } from "../auth/components/LogOutButton";
+import { useEffect, useState } from "react";
+import useDebounce from "@/lib/hooks/useDebounce";
 
 const MoviesPage = () => {
-  const { movies, loading, error, searchTerm, setSearchTerm, showWatchlistOnly, setShowWatchlistOnly, currentUser } =
-    useMovies();
+  const {  user, movies, setMovies } = useMovies();
+  const [error, setError] =  useState(false);
+  const [loading, setLoading] =  useState(false);
+
+  const [searchTerm, setSearchTerm] = useState<string>("");
+  const debouncedSearchTerm = useDebounce(searchTerm, 500);
+  const [showWatchlistOnly, setShowWatchlistOnly] = useState<boolean>(false);
+
+  useEffect(() => {
+    const fetchMovies = async () => {
+      setLoading(true);
+      const url = new URL("/api/movies", window.location.origin);
+      if (debouncedSearchTerm) {
+        url.searchParams.set("search", debouncedSearchTerm);
+      }
+      if (showWatchlistOnly) {
+        url.searchParams.set("watchlist", "true");
+      }
+
+      const res = await fetch(url.toString());
+      const data = await res.json();
+
+      if (res.ok) {
+        setMovies(data ?? []);
+      } else {
+        setError(data.message || "Failed to fetch movies");
+      }
+
+      setLoading(false);
+  }
+
+  fetchMovies();
+}, []);
+  console.log('Movies page rendered');
 
   if (error) return <div className="p-8 text-red-500">Error: {error}</div>;
 
   return (
     <div className="container mx-auto p-8">
       <div className="flex items-center gap-4 mb-6">
-        <h1 className="text-3xl font-bold flex-1">Movies {currentUser?.name && `for ${currentUser?.name}`}</h1>
+        <h1 className="text-3xl font-bold flex-1">Movies {user?.id}</h1> 
+        {/* TODO: {currentUser?.name && `for ${currentUser?.name}`} */}
         <Link href="/movies/new" className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
           Add New Movie
         </Link>
-        <LogOutButton />
+        {user ? <LogOutButton /> : <button><Link href="/login">Login</Link></button>}
       </div>
       <div className="mb-6 flex gap-4">
         <input

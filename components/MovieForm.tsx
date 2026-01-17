@@ -1,11 +1,10 @@
-// movies-app/components/MovieForm.tsx
-'use client';
+"use client";
 
-import { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
-import { Movie } from '@/types/movie';
-import { useMovies } from '@/app/context/MovieContext'; 
-import { defaultMovie } from '@/constants/movie';
+import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
+import { Movie } from "@/types/movie";
+import { useMovies } from "@/app/context/MovieContext";
+import { defaultMovie } from "@/constants/movie";
 
 interface MovieFormProps {
   initialMovie?: Movie;
@@ -13,7 +12,7 @@ interface MovieFormProps {
 
 const MovieForm: React.FC<MovieFormProps> = ({ initialMovie }) => {
   const router = useRouter();
-  const { addMovie, updateMovie, currentUser } = useMovies(); 
+  const { addMovie, updateMovie, user } = useMovies();
   const [movie, setMovie] = useState<Movie>(initialMovie || defaultMovie);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -29,18 +28,17 @@ const MovieForm: React.FC<MovieFormProps> = ({ initialMovie }) => {
     const { name, value } = e.target;
     let newValue: string | number | boolean | undefined;
 
-    if (e.target instanceof HTMLInputElement && e.target.type === 'checkbox') {
+    if (e.target instanceof HTMLInputElement && e.target.type === "checkbox") {
       newValue = e.target.checked;
-    } else if (name === 'year') {
+    } else if (name === "year") {
       newValue = Number(value);
-    } else if (name === 'rating') {
+    } else if (name === "rating") {
       // If the input is empty for an optional number field, set to undefined
-      newValue = value === '' ? undefined : Number(value);
-    } else if (name === 'review') {
+      newValue = value === "" ? undefined : Number(value);
+    } else if (name === "review") {
       // If the input is empty for an optional string field, set to undefined
-      newValue = value === '' ? undefined : value;
-    }
-    else {
+      newValue = value === "" ? undefined : value;
+    } else {
       newValue = value;
     }
 
@@ -56,20 +54,18 @@ const MovieForm: React.FC<MovieFormProps> = ({ initialMovie }) => {
     setError(null);
     setSuccess(null);
 
-    const url = movie.id ? `/api/movies/${movie.id}` : '/api/movies';
-    const method = movie.id ? 'PUT' : 'POST';
+    const url = movie.id ? `/api/movies/${movie.id}` : "/api/movies";
+    const method = movie.id ? "PUT" : "POST";
 
     try {
       // Filter out undefined values from the movie object before sending
-      const movieToSubmit = Object.fromEntries(
-        Object.entries(movie).filter(([, val]) => val !== undefined)
-      );
-      movieToSubmit.createdByUserId = currentUser?.id;
+      const movieToSubmit = Object.fromEntries(Object.entries(movie).filter(([, val]) => val !== undefined));
+      movieToSubmit.createdByUserId = user?.id;
 
       const res = await fetch(url, {
         method,
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
         body: JSON.stringify(movieToSubmit),
       });
@@ -80,14 +76,14 @@ const MovieForm: React.FC<MovieFormProps> = ({ initialMovie }) => {
       }
 
       const result = await res.json();
-      setSuccess(movie.id ? 'Movie updated successfully!' : 'Movie added successfully!');
-      
+      setSuccess(movie.id ? "Movie updated successfully!" : "Movie added successfully!");
+
       if (movie.id) {
-        updateMovie(result); 
+        updateMovie(result);
       } else {
-        addMovie(result); 
+        addMovie(result);
       }
-      router.push('/movies'); 
+      router.push("/movies");
     } catch (e: any) {
       setError(e.message);
     } finally {
@@ -97,12 +93,25 @@ const MovieForm: React.FC<MovieFormProps> = ({ initialMovie }) => {
 
   return (
     <div className="max-w-md mx-auto p-6 bg-white rounded-lg shadow-md">
-      <h2 className="text-2xl font-bold mb-4">{movie.id ? 'Edit Movie' : 'Add New Movie'}</h2>
-      {error && <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-4" role="alert">{error}</div>}
-      {success && <div className="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative mb-4" role="alert">{success}</div>}
+      <h2 className="text-2xl font-bold mb-4">{movie.id ? "Edit Movie" : "Add New Movie"}</h2>
+      {error && (
+        <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-4" role="alert">
+          {error}
+        </div>
+      )}
+      {success && (
+        <div
+          className="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative mb-4"
+          role="alert"
+        >
+          {success}
+        </div>
+      )}
       <form onSubmit={handleSubmit} className="space-y-4">
         <div>
-          <label htmlFor="name" className="block text-sm font-medium text-gray-700">Name</label>
+          <label htmlFor="name" className="block text-sm font-medium text-gray-700">
+            Name
+          </label>
           <input
             type="text"
             id="name"
@@ -114,7 +123,9 @@ const MovieForm: React.FC<MovieFormProps> = ({ initialMovie }) => {
           />
         </div>
         <div>
-          <label htmlFor="year" className="block text-sm font-medium text-gray-700">Year</label>
+          <label htmlFor="year" className="block text-sm font-medium text-gray-700">
+            Year
+          </label>
           <input
             type="number"
             id="year"
@@ -126,7 +137,9 @@ const MovieForm: React.FC<MovieFormProps> = ({ initialMovie }) => {
           />
         </div>
         <div>
-          <label htmlFor="genre" className="block text-sm font-medium text-gray-700">Genre</label>
+          <label htmlFor="genre" className="block text-sm font-medium text-gray-700">
+            Genre
+          </label>
           <input
             type="text"
             id="genre"
@@ -138,12 +151,14 @@ const MovieForm: React.FC<MovieFormProps> = ({ initialMovie }) => {
           />
         </div>
         <div>
-          <label htmlFor="rating" className="block text-sm font-medium text-gray-700">Rating (1-10)</label>
+          <label htmlFor="rating" className="block text-sm font-medium text-gray-700">
+            Rating (1-10)
+          </label>
           <input
             type="number"
             id="rating"
             name="rating"
-            value={movie.rating ?? ''} // Use ?? '' for optional number inputs to avoid controlled component warning
+            value={movie.rating ?? ""} // Use ?? '' for optional number inputs to avoid controlled component warning
             onChange={handleChange}
             min="1"
             max="10"
@@ -152,11 +167,13 @@ const MovieForm: React.FC<MovieFormProps> = ({ initialMovie }) => {
           />
         </div>
         <div>
-          <label htmlFor="review" className="block text-sm font-medium text-gray-700">Review</label>
+          <label htmlFor="review" className="block text-sm font-medium text-gray-700">
+            Review
+          </label>
           <textarea
             id="review"
             name="review"
-            value={movie.review ?? ''} // Use ?? '' for optional string textareas
+            value={movie.review ?? ""} // Use ?? '' for optional string textareas
             onChange={handleChange}
             rows={4}
             className="mt-1 block w-full p-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
@@ -171,14 +188,16 @@ const MovieForm: React.FC<MovieFormProps> = ({ initialMovie }) => {
             onChange={handleChange}
             className="h-4 w-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
           />
-          <label htmlFor="isOnWatchlist" className="ml-2 block text-sm font-medium text-gray-700">Add to Watchlist</label>
+          <label htmlFor="isOnWatchlist" className="ml-2 block text-sm font-medium text-gray-700">
+            Add to Watchlist
+          </label>
         </div>
         <button
           type="submit"
           disabled={loading}
           className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50"
         >
-          {loading ? 'Saving...' : (movie.id ? 'Update Movie' : 'Add Movie')}
+          {loading ? "Saving..." : movie.id ? "Update Movie" : "Add Movie"}
         </button>
       </form>
     </div>
