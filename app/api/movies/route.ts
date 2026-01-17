@@ -31,16 +31,36 @@ export async function POST(request: Request) {
   const { name, year, genre, rating, review, isOnWatchlist, createdByUserId } = await request.json();
   if (!createdByUserId) return NextResponse.json({ error: "Created By User ID is required" }, { status: 400 });
 
-  const newMovie = await prisma.movie.create({
-    data: {
-      name,
-      year,
-      genre,
-      rating,
-      review,
-      isOnWatchlist,
-      createdByUserId: +createdByUserId,
-    },
+  const userId = +createdByUserId;
+  const hasPreferenceData = rating !== undefined || review !== undefined || isOnWatchlist !== undefined;
+
+  const result = await prisma.$transaction(async (tx) => {
+    const newMovie = await tx.movie.create({
+      data: {
+        name,
+        year,
+        genre,
+        rating,
+        review,
+        isOnWatchlist,
+        createdByUserId: userId,
+      },
+    });
+
+    if (hasPreferenceData) {
+      await tx.userMoviePreference.create({
+        data: {
+          userId,
+          movieId: newMovie.id,
+          rating: rating ?? null,
+          review: review ?? null,
+          isOnWatchlist: isOnWatchlist ?? false,
+        },
+      });
+    }
+
+    return newMovie;
   });
-  return NextResponse.json(newMovie, { status: 201 });
+
+  return NextResponse.json(result, { status: 201 });
 }

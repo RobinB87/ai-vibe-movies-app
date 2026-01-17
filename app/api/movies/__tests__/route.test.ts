@@ -2,6 +2,9 @@ import { GET, POST } from "../route";
 import prisma from "@/lib/prisma";
 
 // Mock the prisma instance
+const mockMovieCreate = jest.fn();
+const mockUserMoviePreferenceCreate = jest.fn();
+
 jest.mock("@/lib/prisma", () => ({
   __esModule: true,
   default: {
@@ -9,6 +12,15 @@ jest.mock("@/lib/prisma", () => ({
       findMany: jest.fn(),
       create: jest.fn(),
     },
+    userMoviePreference: {
+      create: jest.fn(),
+    },
+    $transaction: jest.fn((callback) =>
+      callback({
+        movie: { create: mockMovieCreate },
+        userMoviePreference: { create: mockUserMoviePreferenceCreate },
+      })
+    ),
   },
 }));
 
@@ -16,6 +28,8 @@ describe("Movies API", () => {
   beforeEach(() => {
     // Reset mocks before each test
     jest.clearAllMocks();
+    mockMovieCreate.mockClear();
+    mockUserMoviePreferenceCreate.mockClear();
   });
 
   describe("GET /api/movies", () => {
@@ -190,7 +204,7 @@ describe("Movies API", () => {
   });
 
   describe("POST /api/movies", () => {
-    it("should create a new movie with isOnWatchlist property", async () => {
+    it("should create a new movie with isOnWatchlist property and UserMoviePreference", async () => {
       const newMovieData = {
         name: "Watchlist Movie",
         year: 2024,
@@ -201,7 +215,7 @@ describe("Movies API", () => {
         createdByUserId: 1,
       };
       const createdMovie = { id: 4, ...newMovieData };
-      (prisma.movie.create as jest.Mock).mockResolvedValue(createdMovie);
+      mockMovieCreate.mockResolvedValue(createdMovie);
 
       const mockRequest = {
         json: async () => newMovieData,
@@ -212,11 +226,30 @@ describe("Movies API", () => {
 
       expect(response.status).toBe(201);
       expect(data).toEqual(createdMovie);
-      expect(prisma.movie.create).toHaveBeenCalledWith({ data: newMovieData });
-      expect(prisma.movie.create).toHaveBeenCalledTimes(1);
+      expect(prisma.$transaction).toHaveBeenCalledTimes(1);
+      expect(mockMovieCreate).toHaveBeenCalledWith({
+        data: {
+          name: "Watchlist Movie",
+          year: 2024,
+          genre: "Sci-Fi",
+          rating: 4.5,
+          review: "Intriguing",
+          isOnWatchlist: true,
+          createdByUserId: 1,
+        },
+      });
+      expect(mockUserMoviePreferenceCreate).toHaveBeenCalledWith({
+        data: {
+          userId: 1,
+          movieId: 4,
+          rating: 4.5,
+          review: "Intriguing",
+          isOnWatchlist: true,
+        },
+      });
     });
 
-    it("should create a new movie without isOnWatchlist property", async () => {
+    it("should create a new movie without isOnWatchlist property but with rating/review creates UserMoviePreference", async () => {
       const newMovieData = {
         name: "New Movie",
         year: 2023,
@@ -225,8 +258,8 @@ describe("Movies API", () => {
         review: "Good",
         createdByUserId: 1,
       };
-      const createdMovie = { id: 3, ...newMovieData, isOnWatchlist: null }; // Prisma returns null for undefined optional fields
-      (prisma.movie.create as jest.Mock).mockResolvedValue(createdMovie);
+      const createdMovie = { id: 3, ...newMovieData, isOnWatchlist: null };
+      mockMovieCreate.mockResolvedValue(createdMovie);
 
       const mockRequest = {
         json: async () => newMovieData,
@@ -237,11 +270,20 @@ describe("Movies API", () => {
 
       expect(response.status).toBe(201);
       expect(data).toEqual(createdMovie);
-      expect(prisma.movie.create).toHaveBeenCalledWith({ data: newMovieData });
-      expect(prisma.movie.create).toHaveBeenCalledTimes(1);
+      expect(prisma.$transaction).toHaveBeenCalledTimes(1);
+      expect(mockMovieCreate).toHaveBeenCalledTimes(1);
+      expect(mockUserMoviePreferenceCreate).toHaveBeenCalledWith({
+        data: {
+          userId: 1,
+          movieId: 3,
+          rating: 3,
+          review: "Good",
+          isOnWatchlist: false,
+        },
+      });
     });
 
-    it("should create a new movie without rating and review properties", async () => {
+    it("should create a new movie with isOnWatchlist but without rating and review creates UserMoviePreference", async () => {
       const newMovieData = {
         name: "Movie without Rating/Review",
         year: 2023,
@@ -249,8 +291,8 @@ describe("Movies API", () => {
         isOnWatchlist: false,
         createdByUserId: 1,
       };
-      const createdMovie = { id: 5, ...newMovieData, rating: null, review: null }; // Prisma returns null for optional fields not provided
-      (prisma.movie.create as jest.Mock).mockResolvedValue(createdMovie);
+      const createdMovie = { id: 5, ...newMovieData, rating: null, review: null };
+      mockMovieCreate.mockResolvedValue(createdMovie);
 
       const mockRequest = {
         json: async () => newMovieData,
@@ -261,8 +303,41 @@ describe("Movies API", () => {
 
       expect(response.status).toBe(201);
       expect(data).toEqual(createdMovie);
-      expect(prisma.movie.create).toHaveBeenCalledWith({ data: newMovieData });
-      expect(prisma.movie.create).toHaveBeenCalledTimes(1);
+      expect(prisma.$transaction).toHaveBeenCalledTimes(1);
+      expect(mockMovieCreate).toHaveBeenCalledTimes(1);
+      expect(mockUserMoviePreferenceCreate).toHaveBeenCalledWith({
+        data: {
+          userId: 1,
+          movieId: 5,
+          rating: null,
+          review: null,
+          isOnWatchlist: false,
+        },
+      });
+    });
+
+    it("should create a movie without UserMoviePreference when no preference data provided", async () => {
+      const newMovieData = {
+        name: "Basic Movie",
+        year: 2023,
+        genre: "Action",
+        createdByUserId: 1,
+      };
+      const createdMovie = { id: 6, ...newMovieData, rating: null, review: null, isOnWatchlist: null };
+      mockMovieCreate.mockResolvedValue(createdMovie);
+
+      const mockRequest = {
+        json: async () => newMovieData,
+      } as Request;
+
+      const response = await POST(mockRequest);
+      const data = await response.json();
+
+      expect(response.status).toBe(201);
+      expect(data).toEqual(createdMovie);
+      expect(prisma.$transaction).toHaveBeenCalledTimes(1);
+      expect(mockMovieCreate).toHaveBeenCalledTimes(1);
+      expect(mockUserMoviePreferenceCreate).not.toHaveBeenCalled();
     });
   });
 });
