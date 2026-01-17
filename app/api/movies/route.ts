@@ -63,11 +63,15 @@ export async function GET(request: Request) {
 }
 
 export async function POST(request: Request) {
-  const { name, year, genre, rating, review, isOnWatchlist, createdByUserId } = await request.json();
-  if (!createdByUserId) return NextResponse.json({ error: "Created By User ID is required" }, { status: 400 });
+  const { name, year, genre, rating, review, isOnWatchlist } = await request.json();
 
-  const userId = +createdByUserId;
+  const session = await getUserFromSession();
+  const userId = session?.id ? +session.id : null;
 
+  if (!userId) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+  
   const result = await prisma.$transaction(async (tx) => {
     // Find or create the movie (unique by name + year)
     const movie = await tx.movie.upsert({
